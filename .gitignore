@@ -400,4 +400,4 @@ FodyWeavers.xsd
 /.idea
 
 # App Setting
-appsettings.json
+appsettings.Development.json
