@@ -1,4 +1,3 @@
-// File: OnlineContestManagement/Data/Models/User.cs
 using Microsoft.AspNetCore.Identity;
 
 namespace OnlineContestManagement.Data.Models
@@ -7,6 +6,7 @@ namespace OnlineContestManagement.Data.Models
     {
         public String FullName { get; set; }
         public String Role { get; set; }
-        
+        public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
+
     }
 }
