@@ -2,71 +2,44 @@ using OnlineContestManagement.Data.Models;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IConfiguration _configuration;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher)
+        public UserService(IConfiguration configuration)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+            _configuration = configuration;
         }
 
-        public async Task<IdentityResult> RegisterUserAsync(RegisterModel model)
+        public async Task<string> GenerateJwtTokenAsync(User user)
         {
-            if (model == null) throw new ArgumentNullException(nameof(model));
-            if (string.IsNullOrEmpty(model.Password)) throw new ArgumentException("Password cannot be empty", nameof(model.Password));
-            if (string.IsNullOrEmpty(model.Email)) throw new ArgumentException("Email cannot be empty", nameof(model.Email));
-
-            if (!IsValidEmail(model.Email))
-                throw new ArgumentException("Invalid email format", nameof(model.Email));
-
-            var existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
-            if (existingUser != null)
+            var claims = new[]
             {
-                return IdentityResult.Failed(new IdentityError { Code = "EmailExists"
-                ,Description = "Email already exists" });
-            }
-
-
-            var user = new User
-            {
-                UserName = model.Email,
-                Email = model.Email,
-                FullName = model.FullName,
-                Role = model.Role 
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
-            user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            try
-            {
-                await _userRepository.CreateUserAsync(user);
-                return IdentityResult.Success;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("User creation failed", ex);
-            }
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
     }
-
 }

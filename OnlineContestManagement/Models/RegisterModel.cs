@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace OnlineContestManagement.Data.Models
+namespace OnlineContestManagement.Models
 {
     public class RegisterModel
     {

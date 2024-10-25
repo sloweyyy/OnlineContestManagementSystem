@@ -5,6 +5,6 @@ namespace OnlineContestManagement.Infrastructure.Services
 {
     public interface IUserService
     {
-        Task<IdentityResult> RegisterUserAsync(RegisterModel model);
+        Task<string> GenerateJwtTokenAsync(User user);
     }
 }
