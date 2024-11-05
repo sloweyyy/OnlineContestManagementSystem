@@ -15,7 +15,6 @@ namespace OnlineContestManagement.Data.Repositories
 
     public async Task CreateRefreshTokenAsync(RefreshToken refreshToken)
     {
-      refreshToken._id = ObjectId.GenerateNewId().ToString();
       await _refreshTokenCollection.InsertOneAsync(refreshToken);
     }
 
