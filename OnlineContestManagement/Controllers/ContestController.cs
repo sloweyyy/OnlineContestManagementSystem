@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineContestManagement.Infrastructure.Services;
 using OnlineContestManagement.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OnlineContestManagement.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class ContestController : BaseController
+    [ApiController]
+    public class ContestsController : ControllerBase
     {
         private readonly IContestService _contestService;
 
-        public ContestController(IContestService contestService)
+        public ContestsController(IContestService contestService)
         {
             _contestService = contestService;
         }
@@ -18,64 +20,37 @@ namespace OnlineContestManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateContest([FromBody] Contest contest)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             await _contestService.CreateContestAsync(contest);
-            return Ok(new { Message = "Tạo cuộc thi thành công" });
+            return CreatedAtAction(nameof(GetContestById), new { id = contest.Id }, contest);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContestById(string id)
         {
             var contest = await _contestService.GetContestByIdAsync(id);
-            if (contest == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(contest);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllContests()
-        {
-            var contests = await _contestService.GetAllContestsAsync();
-            return Ok(contests);
+            return contest == null ? NotFound() : Ok(contest);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateContest(string id, [FromBody] Contest contest)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var existingContest = await _contestService.GetContestByIdAsync(id);
-            if (existingContest == null)
-            {
-                return NotFound();
-            }
-
             contest.Id = id;
             await _contestService.UpdateContestAsync(contest);
-            return Ok(new { Message = "Cập nhật cuộc thi thành công" });
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContest(string id)
         {
-            var existingContest = await _contestService.GetContestByIdAsync(id);
-            if (existingContest == null)
-            {
-                return NotFound();
-            }
-
             await _contestService.DeleteContestAsync(id);
-            return Ok(new { Message = "Xóa cuộc thi thành công" });
+            return NoContent();
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchContests([FromQuery] string keyword, [FromQuery] int? minParticipants, [FromQuery] int? maxParticipants, [FromQuery] List<string> skills)
+        {
+            var contests = await _contestService.SearchContestsAsync(keyword, minParticipants, maxParticipants, skills);
+            return Ok(contests);
         }
     }
 }

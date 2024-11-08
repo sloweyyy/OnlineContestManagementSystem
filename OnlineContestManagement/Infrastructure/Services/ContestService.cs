@@ -1,5 +1,7 @@
 ﻿using OnlineContestManagement.Models;
 using OnlineContestManagement.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
@@ -12,29 +14,22 @@ namespace OnlineContestManagement.Infrastructure.Services
             _contestRepository = contestRepository;
         }
 
-        public async Task CreateContestAsync(Contest contest)
+        public Task CreateContestAsync(Contest contest) => _contestRepository.CreateContestAsync(contest);
+
+        public Task<Contest> GetContestByIdAsync(string id) => _contestRepository.GetContestByIdAsync(id);
+
+        public Task UpdateContestAsync(Contest contest) => _contestRepository.UpdateContestAsync(contest);
+
+        public Task DeleteContestAsync(string id) => _contestRepository.DeleteContestAsync(id);
+
+        public Task<List<Contest>> SearchContestsAsync(string keyword, int? minParticipants, int? maxParticipants, List<string> skills)
         {
-            await _contestRepository.CreateContestAsync(contest);
+            return _contestRepository.SearchContestsAsync(keyword, minParticipants, maxParticipants, skills);
         }
 
-        public async Task<Contest> GetContestByIdAsync(string id)
+        public Task<IEnumerable<Contest>> GetAllContestsAsync()
         {
-            return await _contestRepository.GetContestByIdAsync(id);
-        }
-
-        public async Task<IEnumerable<Contest>> GetAllContestsAsync()
-        {
-            return await _contestRepository.GetAllContestsAsync();
-        }
-
-        public async Task UpdateContestAsync(Contest contest)
-        {
-            await _contestRepository.UpdateContestAsync(contest);
-        }
-
-        public async Task DeleteContestAsync(string id)
-        {
-            await _contestRepository.DeleteContestAsync(id);
+            throw new NotImplementedException();
         }
     }
 }

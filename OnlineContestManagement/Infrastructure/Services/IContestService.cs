@@ -6,8 +6,8 @@ namespace OnlineContestManagement.Infrastructure.Services
     {
         Task CreateContestAsync(Contest contest);
         Task<Contest> GetContestByIdAsync(string id);
-        Task<IEnumerable<Contest>> GetAllContestsAsync();
         Task UpdateContestAsync(Contest contest);
         Task DeleteContestAsync(string id);
+        Task<List<Contest>> SearchContestsAsync(string keyword, int? minParticipants, int? maxParticipants, List<string> skills);
     }
 }
