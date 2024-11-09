@@ -2,6 +2,16 @@
 
 This project implements a comprehensive backend API to manage online contests, offering a user-friendly platform for organizations, companies, or individuals to create, promote, and manage contests, with streamlined registration and payment functionalities.
 
+### Table of Contents
+
+- [Product Overview](#product-overview)
+- [Key Features](#key-features)
+- [Technologies](#technologies)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [License](#license)
+
 ### Product Overview
 
 The platform serves as a solution for managing the entire lifecycle of online contests, including creation, posting, promotion, registration management, and payment processing. The primary goal is to simplify contest management for organizers and to enhance accessibility for participants.
@@ -44,14 +54,14 @@ The platform serves as a solution for managing the entire lifecycle of online co
 - **Registration Statistics**: Monitor the number of created contests and registered users.
 - **Revenue Tracking**: Track system revenue generated from contest fees.
 
-### 3. Technologies
+### Technologies
 
 - **C#**: Core language for backend API development.
 - **ASP.NET Core**: Framework for building the API.
 - **MongoDB**: NoSQL database to store contest data.
 - **JWT Authentication**: Authentication and authorization via JSON Web Tokens.
 
-### 4. Project Structure
+### Project Structure
 
 - **Controllers**: API controllers to handle requests.
 - **Data**:
@@ -61,7 +71,7 @@ The platform serves as a solution for managing the entire lifecycle of online co
   - **Services**: Contains business logic and data handling.
 - **Models**: Data transfer models between client and API.
 
-### 5. Getting Started
+### Getting Started
 
 1. **Prerequisites**:
    - .NET 8 SDK
