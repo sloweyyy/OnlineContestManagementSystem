@@ -60,6 +60,9 @@ namespace OnlineContestManagement
                 });
             });
 
+            // Add HttpContextAccessor
+            services.AddHttpContextAccessor();
+
             // Configure MongoDB
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbSettings"));
             services.AddSingleton<IMongoClient>(sp =>
@@ -77,10 +80,12 @@ namespace OnlineContestManagement
             // Configure Repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<IContestRepository, ContestRepository>();
 
             // Configure Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IContestService, ContestService>();
 
             // Configure Password Hasher
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -132,7 +137,11 @@ namespace OnlineContestManagement
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineContestManagement v1"));
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnlineContestManagement v1");
+                    c.RoutePrefix = string.Empty;
+                });
             }
 
             app.UseHttpsRedirection();
