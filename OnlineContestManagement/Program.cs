@@ -25,7 +25,8 @@ public class Program
         Console.WriteLine($"JWT Secret Key: {builder.Configuration["JWT_SECRET_KEY"]}");
         Console.WriteLine($"JWT Issuer: {builder.Configuration["JWT_ISSUER"]}");
         Console.WriteLine($"JWT Audience: {builder.Configuration["JWT_AUDIENCE"]}");
-        Console.WriteLine($"Google Client ID: {builder.Configuration["GOOGLE_CLIENTID"]}");
+        Console.WriteLine($"Google Client ID: {builder.Configuration["GOOGLE_CLIENT_ID"]}");
+        Console.WriteLine($"Google Client Secret: {builder.Configuration["GOOGLE_CLIENT_SECRET"]}");
         Console.WriteLine($"MongoDB Connection String: {builder.Configuration["MONGODB_CONNECTIONSTRING"]}");
 
         // Register services
