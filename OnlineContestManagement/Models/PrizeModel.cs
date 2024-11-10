@@ -8,5 +8,6 @@ namespace OnlineContestManagement.Models
     public string Description { get; set; }
     public decimal Value { get; set; }
     public string ImageUrl { get; set; }
+    public decimal Amount { get; set; } // Add this line
   }
 }

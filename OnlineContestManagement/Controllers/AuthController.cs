@@ -19,8 +19,8 @@ namespace OnlineContestManagement.Controllers
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         }
-        
-        [HttpPost("register")]  
+
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
             if (!ModelState.IsValid)
