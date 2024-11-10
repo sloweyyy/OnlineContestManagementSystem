@@ -399,5 +399,5 @@ FodyWeavers.xsd
 /.vscode
 /.idea
 
-# App Setting
-appsettings.Development.json
+# Environment variables file
+.env

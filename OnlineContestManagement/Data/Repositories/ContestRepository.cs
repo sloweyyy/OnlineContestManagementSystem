@@ -29,13 +29,15 @@ namespace OnlineContestManagement.Data.Repositories
       var filter = Builders<Contest>.Filter.Eq(c => c.Id, id);
       var update = Builders<Contest>.Update
           .Set(c => c.Name, contest.Name)
-          .Set(c => c.Description, contest.Description)
+          .Set(c => c.RuleDescription, contest.RuleDescription)
           .Set(c => c.StartDate, contest.StartDate)
           .Set(c => c.EndDate, contest.EndDate)
           .Set(c => c.MinimumParticipant, contest.MinimumParticipant)
           .Set(c => c.MaximumParticipant, contest.MaximumParticipant)
           .Set(c => c.Prizes, contest.Prizes)
-          .Set(c => c.ParticipantInformationRequirements, contest.ParticipantInformationRequirements);
+          .Set(c => c.ParticipantInformationRequirements, contest.ParticipantInformationRequirements)
+          .Set(c => c.OrganizationInformation, contest.OrganizationInformation)
+          .Set(c => c.ImageUrl, contest.ImageUrl);
 
       var result = await _contests.UpdateOneAsync(filter, update);
       if (result.ModifiedCount == 1)

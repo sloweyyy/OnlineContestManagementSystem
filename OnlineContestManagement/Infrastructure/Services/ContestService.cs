@@ -2,7 +2,9 @@ using OnlineContestManagement.Data.Models;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Models;
 using System.Security.Claims;
-
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.Extensions.Configuration;
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
@@ -10,13 +12,26 @@ namespace OnlineContestManagement.Infrastructure.Services
   {
     private readonly IContestRepository _contestRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly Cloudinary _cloudinary;
+    private readonly IConfiguration _configuration;
 
 
-    public ContestService(IContestRepository contestRepository, IHttpContextAccessor httpContextAccessor)
+    public ContestService(IContestRepository contestRepository, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
     {
       _contestRepository = contestRepository ?? throw new ArgumentNullException(nameof(contestRepository));
       _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+      _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
+      // Configure Cloudinary
+      // var cloudinaryAccount = new Account(
+      //   _configuration["Cloudinary:CloudName"],
+      //   _configuration["Cloudinary:ApiKey"],
+      //   _configuration["Cloudinary:ApiSecret"]
+      // );
+      // System.Console.WriteLine("Cloudinary account: " + cloudinaryAccount.ApiKey);
+      // System.Console.WriteLine("Cloudinary account: " + cloudinaryAccount.ApiSecret);
+      // System.Console.WriteLine("Cloudinary account: " + cloudinaryAccount.Cloud);
+      // _cloudinary = new Cloudinary(cloudinaryAccount);
     }
 
     public async Task<Contest> CreateContestAsync(CreateContestModel model)
@@ -26,14 +41,17 @@ namespace OnlineContestManagement.Infrastructure.Services
       var contest = new Contest
       {
         Name = model.Name,
-        Description = model.Description,
+        RuleDescription = model.RuleDescription,
         StartDate = model.StartDate,
         EndDate = model.EndDate,
         MinimumParticipant = model.MinimumParticipant,
         MaximumParticipant = model.MaximumParticipant,
         Prizes = model.Prizes,
         ParticipantInformationRequirements = model.ParticipantInformationRequirements,
-        CreatorUserId = userId
+        CreatorUserId = userId,
+        OrganizationInformation = model.OrganizationInformation,
+        // ImageUrl = await UploadImageToCloudinary(model.ImageUrl)
+        ImageUrl = model.ImageUrl
       };
 
       await _contestRepository.CreateContestAsync(contest);
@@ -52,14 +70,17 @@ namespace OnlineContestManagement.Infrastructure.Services
       {
         Id = id,
         Name = model.Name,
-        Description = model.Description,
+        RuleDescription = model.RuleDescription,
         StartDate = model.StartDate,
         EndDate = model.EndDate,
         MinimumParticipant = model.MinimumParticipant,
         MaximumParticipant = model.MaximumParticipant,
         Prizes = model.Prizes,
         ParticipantInformationRequirements = model.ParticipantInformationRequirements,
-        CreatorUserId = userId
+        CreatorUserId = userId,
+        OrganizationInformation = model.OrganizationInformation,
+        // ImageUrl = await UploadImageToCloudinary(model.ImageUrl)
+        ImageUrl = model.ImageUrl
       };
 
       return await _contestRepository.UpdateContestAsync(id, contest);
@@ -73,6 +94,18 @@ namespace OnlineContestManagement.Infrastructure.Services
     public async Task<List<Contest>> SearchContestsAsync(ContestSearchFilter filter)
     {
       return await _contestRepository.SearchContestsAsync(filter);
+    }
+
+    private async Task<string> UploadImageToCloudinary(string imageData)
+    {
+      var uploadParams = new ImageUploadParams()
+      {
+        File = new FileDescription("contest_image.jpg", new MemoryStream(Convert.FromBase64String(imageData))),
+        PublicId = "contests/" + Guid.NewGuid().ToString(),
+        Transformation = new Transformation().Width(800).Height(600).Crop("fill")
+      };
+      var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+      return uploadResult.SecureUrl.ToString();
     }
   }
 }

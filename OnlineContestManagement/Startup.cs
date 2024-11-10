@@ -46,17 +46,17 @@ namespace OnlineContestManagement
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
                     {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
                     }
-                },
-                new string[] {}
-            }
                 });
             });
 
@@ -68,13 +68,13 @@ namespace OnlineContestManagement
             services.AddSingleton<IMongoClient>(sp =>
             {
                 var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
-                return new MongoClient(settings.ConnectionString);
+                return new MongoClient(Configuration["MONGODB_CONNECTIONSTRING"]);
             });
             services.AddSingleton<IMongoDatabase>(sp =>
             {
                 var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
                 var client = sp.GetRequiredService<IMongoClient>();
-                return client.GetDatabase(settings.DatabaseName);
+                return client.GetDatabase(Configuration["MONGODB_DATABASE_NAME"]);
             });
 
             // Configure Repositories
@@ -91,14 +91,25 @@ namespace OnlineContestManagement
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
             // Configure JWT Authentication
-            var jwtSettings = Configuration.GetSection("JwtSettings").Get<JwtSettings>();
-            if (jwtSettings?.SecretKey == null)
+            var jwtSettings = new JwtSettings
             {
-                throw new InvalidOperationException("JWT Secret Key is not configured");
-            }
+                SecretKey = Configuration["JWT_SECRET_KEY"],
+                Issuer = Configuration["JWT_ISSUER"],
+                Audience = Configuration["JWT_AUDIENCE"],
+                ExpiryMinutes = int.Parse(Configuration["JWT_EXPIRY_MINUTES"]),
+                RefreshTokenExpiryDays = int.Parse(Configuration["JWT_REFRESH_TOKEN_EXPIRY_DAYS"])
+            };
 
-            services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
+            services.Configure<JwtSettings>(options =>
+            {
+                options.SecretKey = jwtSettings.SecretKey;
+                options.Issuer = jwtSettings.Issuer;
+                options.Audience = jwtSettings.Audience;
+                options.ExpiryMinutes = jwtSettings.ExpiryMinutes;
+                options.RefreshTokenExpiryDays = jwtSettings.RefreshTokenExpiryDays;
+            });
 
+            // Add JWT authentication
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

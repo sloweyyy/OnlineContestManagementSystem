@@ -8,7 +8,7 @@ namespace OnlineContestManagement.Models
     public string Name { get; set; }
 
     [Required]
-    public string Description { get; set; }
+    public string RuleDescription { get; set; }
 
     [Required]
     public DateTime StartDate { get; set; }
@@ -27,13 +27,19 @@ namespace OnlineContestManagement.Models
 
     [Required]
     public List<string> ParticipantInformationRequirements { get; set; }
+
+    [Required]
+    public OrganizationInformationModel OrganizationInformation { get; set; }
+
+    [Required]
+    public string ImageUrl { get; set; }
   }
 
   public class UpdateContestModel
   {
     public string Name { get; set; }
 
-    public string Description { get; set; }
+    public string RuleDescription { get; set; }
 
     public DateTime StartDate { get; set; }
 
@@ -46,6 +52,10 @@ namespace OnlineContestManagement.Models
     public List<PrizeModel> Prizes { get; set; }
 
     public List<string> ParticipantInformationRequirements { get; set; }
+
+    public OrganizationInformationModel OrganizationInformation { get; set; }
+
+    public string ImageUrl { get; set; }
   }
 
   public class ContestSearchFilter
