@@ -1,7 +1,7 @@
 using OnlineContestManagement.Data.Models;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using OnlineContestManagement.Models; // Add this line
+using OnlineContestManagement.Models; 
 
 namespace OnlineContestManagement.Data.Repositories
 {
