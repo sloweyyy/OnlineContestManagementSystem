@@ -1,23 +1,18 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using OnlineContestManagement.Data;
-using OnlineContestManagement.Data.Models;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
-using OnlineContestManagement.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using OnlineContestManagement.Infrastructure;
 
 namespace OnlineContestManagement
 {
@@ -67,12 +62,10 @@ namespace OnlineContestManagement
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbSettings"));
             services.AddSingleton<IMongoClient>(sp =>
             {
-                var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
                 return new MongoClient(Configuration["MONGODB_CONNECTIONSTRING"]);
             });
             services.AddSingleton<IMongoDatabase>(sp =>
             {
-                var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
                 var client = sp.GetRequiredService<IMongoClient>();
                 return client.GetDatabase(Configuration["MONGODB_DATABASE_NAME"]);
             });
@@ -81,14 +74,14 @@ namespace OnlineContestManagement
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IContestRepository, ContestRepository>();
+            services.AddScoped<IContestRegistrationRepository, ContestRegistrationRepository>(); 
 
             // Configure Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IContestService, ContestService>();
-
-            // Configure Password Hasher
-            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            services.AddScoped<IContestRegistrationService, ContestRegistrationService>(); 
+            services.AddScoped<IEmailService, EmailService>(); 
 
             // Configure JWT Authentication
             var jwtSettings = new JwtSettings
