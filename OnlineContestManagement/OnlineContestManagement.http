@@ -1,4 +1,4 @@
-@OnlineContestManagement_HostAddress = http://localhost:5210
+@OnlineContestManagement_HostAddress = http://localhost:7163
 
 GET {{OnlineContestManagement_HostAddress}}/weatherforecast/
 Accept: application/json

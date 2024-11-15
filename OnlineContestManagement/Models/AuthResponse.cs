@@ -1,4 +1,4 @@
-
+    
 public class AuthResponse
 {
     public UserInfo User { get; set; }

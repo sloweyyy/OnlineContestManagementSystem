@@ -3,7 +3,6 @@ using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using OnlineContestManagement.Data.Models;
-using DotNetEnv;
 
 public class Program
 {

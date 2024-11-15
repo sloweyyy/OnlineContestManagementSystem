@@ -1,17 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using OnlineContestManagement.Data;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
-using Microsoft.Extensions.Options;
 using OnlineContestManagement.Infrastructure;
 
 namespace OnlineContestManagement

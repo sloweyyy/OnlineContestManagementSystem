@@ -15,42 +15,20 @@ namespace OnlineContestManagement.Controllers
     {
         private readonly IContestRegistrationRepository _registrationRepository;
         private readonly IEmailService _emailService;
-        private IContestRegistrationService _registrationService;
+        private readonly IContestRegistrationService _registrationService;
 
-        public ContestRegistrationController(IContestRegistrationRepository registrationRepository, IEmailService emailService)
+        public ContestRegistrationController(
+            IContestRegistrationRepository registrationRepository,
+            IEmailService emailService,
+            IContestRegistrationService registrationService)
         {
             _registrationRepository = registrationRepository;
             _emailService = emailService;
-        }
-
-        public async Task<bool> RegisterUserForContestAsync(RegisterForContestModel registrationModel)
-        {
-            var registration = new ContestRegistration
-            {
-                ContestId = registrationModel.ContestId,
-                UserId = registrationModel.UserId,
-                Name = registrationModel.Name,
-                DateOfBirth = registrationModel.DateOfBirth,
-                Email = registrationModel.Email,
-                AdditionalInfo = registrationModel.AdditionalInfo,
-                RegistrationDate = DateTime.UtcNow,
-                Status = "Registered"
-            };
-
-            var result = await _registrationRepository.RegisterUserAsync(registration);
-            if (result)
-            {
-                await _emailService.SendRegistrationConfirmation(registrationModel.Email, registrationModel.ContestId);
-            }
-            return result;
-        }
-
-        public ContestRegistrationController(IContestRegistrationService registrationService)
-        {
             _registrationService = registrationService;
         }
 
         [HttpPost]
+        [Route("")]
         public async Task<IActionResult> RegisterForContest(string contestId, [FromBody] RegisterForContestModel registrationModel)
         {
             if (!ModelState.IsValid)
@@ -58,11 +36,12 @@ namespace OnlineContestManagement.Controllers
                 return BadRequest(ModelState);
             }
 
-            registrationModel.ContestId = contestId; // Gán ContestId từ route
+            registrationModel.ContestId = contestId;
 
             var result = await _registrationService.RegisterUserForContestAsync(registrationModel);
             if (result)
             {
+                await _emailService.SendRegistrationConfirmation(registrationModel.Email, contestId);
                 return Ok(new { Message = "Registration successful." });
             }
             return BadRequest(new { Message = "Registration failed." });
@@ -71,7 +50,12 @@ namespace OnlineContestManagement.Controllers
         [HttpPost("withdraw")]
         public async Task<IActionResult> WithdrawFromContest(string contestId, [FromBody] WithdrawFromContestModel withdrawModel)
         {
-            withdrawModel.ContestId = contestId; // Gán ContestId từ route
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            withdrawModel.ContestId = contestId;
 
             var result = await _registrationService.WithdrawUserFromContestAsync(withdrawModel);
             if (result)
@@ -79,6 +63,23 @@ namespace OnlineContestManagement.Controllers
                 return Ok(new { Message = "Withdrawal successful." });
             }
             return BadRequest(new { Message = "Withdrawal failed." });
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetContestsByUserId(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new { Message = "UserId is required." });
+            }
+
+            var registrations = await _registrationService.GetContestsByUserIdAsync(userId);
+            if (registrations == null || registrations.Count == 0)
+            {
+                return NotFound(new { Message = "No registrations found for this user." });
+            }
+
+            return Ok(registrations);
         }
     }
 }

@@ -2,6 +2,7 @@
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace OnlineContestManagement.Infrastructure.Services
@@ -47,6 +48,12 @@ namespace OnlineContestManagement.Infrastructure.Services
         public async Task<List<ContestRegistration>> SearchRegistrationsAsync(ContestRegistrationSearchFilter filter)
         {
             return await _registrationRepository.SearchRegistrationsAsync(filter);
+        }
+
+        
+        public async Task<List<ContestRegistration>> GetContestsByUserIdAsync(string userId)
+        {
+            return await _registrationRepository.GetRegistrationsByUserIdAsync(userId);
         }
     }
 }

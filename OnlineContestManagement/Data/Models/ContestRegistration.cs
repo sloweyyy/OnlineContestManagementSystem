@@ -14,7 +14,7 @@ namespace OnlineContestManagement.Data.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string ContestId { get; set; }
 
-        [BsonRepresentation(BsonType.ObjectId)]
+        
         public string UserId { get; set; }
 
         public string Name { get; set; }
@@ -28,5 +28,7 @@ namespace OnlineContestManagement.Data.Models
         public DateTime RegistrationDate { get; set; }
 
         public string Status { get; set; }
+
+       
     }
 }

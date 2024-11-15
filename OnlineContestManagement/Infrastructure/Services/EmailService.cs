@@ -1,31 +1,37 @@
-﻿using System.Net.Mail;
-using System.Net;
+﻿using System.Net;
+using System.Net.Mail;
+using Microsoft.Extensions.Configuration;
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
     public class EmailService : IEmailService
     {
-        public async Task SendRegistrationConfirmation(string email, string contestId)
+        private readonly IConfiguration _configuration;
+
+        public EmailService(IConfiguration configuration)
         {
-            var subject = "Registration Successful";
-            var body = $"You have successfully registered for contest {contestId}. Thank you for participating!";
+            _configuration = configuration;
+        }
 
-            using (var smtpClient = new SmtpClient("smtp.your-email-provider.com"))
+        public async Task SendRegistrationConfirmation(string from, string to)
+        {
+            var host = _configuration["SmtpSettings:Host"];
+            var port = int.Parse(_configuration["SmtpSettings:Port"]);
+            var username = _configuration["SmtpSettings:Username"];
+            var password = _configuration["SmtpSettings:Password"];
+            var useSsl = bool.Parse(_configuration["SmtpSettings:UseSSL"]);
+
+            var message = new MailMessage(from, to)
             {
-                smtpClient.Port = 587; // Hoặc cổng phù hợp
-                smtpClient.Credentials = new NetworkCredential("your-email@example.com", "your-email-password");
-                smtpClient.EnableSsl = true;
+                Subject = "Registration Confirmation",
+                Body = "Thank you for registering!"
+            };
 
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress("your-email@example.com"),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true,
-                };
-                mailMessage.To.Add(email);
-
-                await smtpClient.SendMailAsync(mailMessage);
+            using (var smtpClient = new SmtpClient(host, port))
+            {
+                smtpClient.Credentials = new NetworkCredential(username, password);
+                smtpClient.EnableSsl = useSsl;
+                await smtpClient.SendMailAsync(message);
             }
         }
     }

@@ -9,6 +9,7 @@ namespace OnlineContestManagement.Data.Repositories
     public class ContestRegistrationRepository : IContestRegistrationRepository
     {
         private readonly IMongoCollection<ContestRegistration> _registrations;
+        private readonly IMongoCollection<ContestRegistration> _collection;
 
         public ContestRegistrationRepository(IMongoDatabase database)
         {
@@ -23,7 +24,7 @@ namespace OnlineContestManagement.Data.Repositories
 
         public async Task<bool> WithdrawUserAsync(string contestId, string userId)
         {
-            var result = await _registrations.DeleteOneAsync(r => r.ContestId == contestId && r.UserId == userId);
+            var result = await _registrations.DeleteOneAsync(r => r.ContestId == contestId && ObjectId.Parse(r.UserId) == ObjectId.Parse(userId));
             return result.DeletedCount > 0;
         }
 
@@ -42,9 +43,9 @@ namespace OnlineContestManagement.Data.Repositories
             }
 
             if (!string.IsNullOrEmpty(filter.UserId))
-            {
-                query = query.Where(r => r.UserId == filter.UserId);
-            }
+{
+    query = query.Where(r => ObjectId.Parse(r.UserId) == ObjectId.Parse(filter.UserId));
+}
 
             if (!string.IsNullOrEmpty(filter.Status))
             {
@@ -53,5 +54,13 @@ namespace OnlineContestManagement.Data.Repositories
 
             return await query.ToListAsync();
         }
+
+        public async Task<List<ContestRegistration>> GetRegistrationsByUserIdAsync(string userId)
+        {
+            var objectId = ObjectId.Parse(userId);
+            var filter = Builders<ContestRegistration>.Filter.Eq("_id", objectId); 
+            return await _collection.Find(filter).ToListAsync();
+        }
+
     }
 }

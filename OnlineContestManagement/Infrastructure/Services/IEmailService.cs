@@ -4,4 +4,6 @@
     {
         Task SendRegistrationConfirmation(string email, string contestId);
     }
+
+
 }
