@@ -1,66 +1,73 @@
-﻿using OnlineContestManagement.Models;
-using MongoDB.Driver;
+﻿using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using OnlineContestManagement.Data.Models;
-using MongoDB.Driver.Linq;
+using OnlineContestManagement.Data.Repositories;
+using OnlineContestManagement.Models;
 
-namespace OnlineContestManagement.Data.Repositories
+public class ContestRegistrationRepository : IContestRegistrationRepository
 {
-    public class ContestRegistrationRepository : IContestRegistrationRepository
+    private readonly IMongoCollection<ContestRegistration> _collection;
+    private readonly IMongoCollection<Contest> _contestCollection;
+
+    public ContestRegistrationRepository(IMongoDatabase database)
     {
-        private readonly IMongoCollection<ContestRegistration> _registrations;
-        private readonly IMongoCollection<ContestRegistration> _collection;
+        _collection = database.GetCollection<ContestRegistration>("contestRegistrations");
+        _contestCollection = database.GetCollection<Contest>("contests");
+    }
 
-        public ContestRegistrationRepository(IMongoDatabase database)
+    public async Task<bool> RegisterUserAsync(ContestRegistration registration)
+    {
+        await _collection.InsertOneAsync(registration); 
+        return true;
+    }
+
+    public async Task<bool> WithdrawUserAsync(string contestId, string userId)
+    {
+        var result = await _collection.DeleteOneAsync(r => r.ContestId == contestId && ObjectId.Parse(r.UserId) == ObjectId.Parse(userId));
+        return result.DeletedCount > 0;
+    }
+
+    public async Task<List<ContestRegistration>> GetRegistrationsByContestIdAsync(string contestId)
+    {
+        return await _collection.Find(r => r.ContestId == contestId).ToListAsync();
+    }
+
+    public async Task<List<ContestRegistration>> SearchRegistrationsAsync(ContestRegistrationSearchFilter filter)
+    {
+        var query = _collection.AsQueryable();
+
+        if (!string.IsNullOrEmpty(filter.ContestId))
         {
-            _registrations = database.GetCollection<ContestRegistration>("ContestRegistrations");
+            query = query.Where(r => r.ContestId == filter.ContestId);
         }
 
-        public async Task<bool> RegisterUserAsync(ContestRegistration registration)
+        if (!string.IsNullOrEmpty(filter.UserId))
         {
-            await _registrations.InsertOneAsync(registration);
-            return true;
+            query = query.Where(r => ObjectId.Parse(r.UserId) == ObjectId.Parse(filter.UserId));
         }
 
-        public async Task<bool> WithdrawUserAsync(string contestId, string userId)
+        if (!string.IsNullOrEmpty(filter.Status))
         {
-            var result = await _registrations.DeleteOneAsync(r => r.ContestId == contestId && ObjectId.Parse(r.UserId) == ObjectId.Parse(userId));
-            return result.DeletedCount > 0;
+            query = query.Where(r => r.Status == filter.Status);
         }
 
-        public async Task<List<ContestRegistration>> GetRegistrationsByContestIdAsync(string contestId)
-        {
-            return await _registrations.Find(r => r.ContestId == contestId).ToListAsync();
-        }
+        return await query.ToListAsync();
+    }
 
-        public async Task<List<ContestRegistration>> SearchRegistrationsAsync(ContestRegistrationSearchFilter filter)
-        {
-            var query = _registrations.AsQueryable();
+    public async Task<List<ContestRegistration>> GetRegistrationsByUserIdAsync(string userId)
+    {
+        var filter = Builders<ContestRegistration>.Filter.Eq(r => r.UserId, userId);
+        return await _collection.Find(filter).ToListAsync(); // Sử dụng _collection thay vì _registrations
+    }
 
-            if (!string.IsNullOrEmpty(filter.ContestId))
-            {
-                query = query.Where(r => r.ContestId == filter.ContestId);
-            }
+    public async Task<List<Contest>> GetContestsByUserIdAsync(string userId)
+    {
+        var filter = Builders<ContestRegistration>.Filter.Eq(r => r.UserId, userId);
+        var registrations = await _collection.Find(filter).ToListAsync();
 
-            if (!string.IsNullOrEmpty(filter.UserId))
-{
-    query = query.Where(r => ObjectId.Parse(r.UserId) == ObjectId.Parse(filter.UserId));
-}
-
-            if (!string.IsNullOrEmpty(filter.Status))
-            {
-                query = query.Where(r => r.Status == filter.Status);
-            }
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<List<ContestRegistration>> GetRegistrationsByUserIdAsync(string userId)
-        {
-            var objectId = ObjectId.Parse(userId);
-            var filter = Builders<ContestRegistration>.Filter.Eq("_id", objectId); 
-            return await _collection.Find(filter).ToListAsync();
-        }
-
+        var contestIds = registrations.ConvertAll(r => r.ContestId);
+        var contestFilter = Builders<Contest>.Filter.In(c => c.Id, contestIds);
+        return await _contestCollection.Find(contestFilter).ToListAsync();
     }
 }

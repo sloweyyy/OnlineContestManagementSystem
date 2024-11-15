@@ -10,7 +10,7 @@ namespace OnlineContestManagement.Data.Repositories
         Task<List<ContestRegistration>> GetRegistrationsByContestIdAsync(string contestId);
         Task<List<ContestRegistration>> SearchRegistrationsAsync(ContestRegistrationSearchFilter filter);
         Task<List<ContestRegistration>> GetRegistrationsByUserIdAsync(string userId);
-
+        Task<List<Contest>> GetContestsByUserIdAsync(string userId);
     }
 
 }

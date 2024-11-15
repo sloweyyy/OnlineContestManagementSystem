@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace OnlineContestManagement.Controllers
 {
     [ApiController]
-    [Route("api/contests/{contestId}/registration")]
+    [Route("api/contests")]
     [Authorize]
     public class ContestRegistrationController : ControllerBase
     {
@@ -65,7 +65,7 @@ namespace OnlineContestManagement.Controllers
             return BadRequest(new { Message = "Withdrawal failed." });
         }
 
-        [HttpGet("user/{userId}")]
+        [HttpGet("registration/user/{userId}")]
         public async Task<IActionResult> GetContestsByUserId(string userId)
         {
             if (string.IsNullOrEmpty(userId))

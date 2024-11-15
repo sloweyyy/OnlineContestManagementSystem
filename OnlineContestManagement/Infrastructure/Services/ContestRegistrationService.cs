@@ -50,10 +50,29 @@ namespace OnlineContestManagement.Infrastructure.Services
             return await _registrationRepository.SearchRegistrationsAsync(filter);
         }
 
-        
+
         public async Task<List<ContestRegistration>> GetContestsByUserIdAsync(string userId)
         {
-            return await _registrationRepository.GetRegistrationsByUserIdAsync(userId);
+            var contests = await _registrationRepository.GetContestsByUserIdAsync(userId);
+
+            
+            var contestRegistrations = new List<ContestRegistration>();
+
+            foreach (var contest in contests)
+            {
+                var registration = new ContestRegistration
+                {
+                    ContestId = contest.Id.ToString(), 
+                    Name = contest.Name,
+                    Status = "Registered", 
+                    RegistrationDate = DateTime.UtcNow 
+                };
+
+                contestRegistrations.Add(registration);
+            }
+
+            return contestRegistrations;
         }
+
     }
 }
