@@ -35,6 +35,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             var result = await _registrationRepository.RegisterUserAsync(registration);
             if (result)
             {
+                Console.WriteLine("Sending registration confirmation email to " + registrationModel.Email);
                 await _emailService.SendRegistrationConfirmation(registrationModel.Email, registrationModel.ContestId);
             }
             return result;
@@ -42,8 +43,17 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         public async Task<bool> WithdrawUserFromContestAsync(WithdrawFromContestModel withdrawModel)
         {
-            return await _registrationRepository.WithdrawUserAsync(withdrawModel.ContestId, withdrawModel.UserId);
+            await _registrationRepository.WithdrawUserAsync(withdrawModel.ContestId, withdrawModel.UserId);
+
+            var registration = await _registrationRepository.GetRegistrationByUserIdAndContestIdAsync(withdrawModel.ContestId, withdrawModel.UserId);
+            if (registration != null)
+            {
+                await _emailService.SendWithdrawalConfirmation(registration.Email, withdrawModel.ContestId);
+            }
+
+            return true;
         }
+
 
         public async Task<List<ContestRegistration>> SearchRegistrationsAsync(ContestRegistrationSearchFilter filter)
         {
@@ -53,26 +63,7 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         public async Task<List<ContestRegistration>> GetContestsByUserIdAsync(string userId)
         {
-            var contests = await _registrationRepository.GetContestsByUserIdAsync(userId);
-
-            
-            var contestRegistrations = new List<ContestRegistration>();
-
-            foreach (var contest in contests)
-            {
-                var registration = new ContestRegistration
-                {
-                    ContestId = contest.Id.ToString(), 
-                    Name = contest.Name,
-                    Status = "Registered", 
-                    RegistrationDate = DateTime.UtcNow 
-                };
-
-                contestRegistrations.Add(registration);
-            }
-
-            return contestRegistrations;
+            return await _registrationRepository.GetRegistrationsByUserIdAsync(userId);
         }
-
     }
 }

@@ -4,6 +4,7 @@ using OnlineContestManagement.Data.Models;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using OnlineContestManagement.Models;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace OnlineContestManagement.Controllers
@@ -27,8 +28,7 @@ namespace OnlineContestManagement.Controllers
             _registrationService = registrationService;
         }
 
-        [HttpPost]
-        [Route("")]
+        [HttpPost("{contestId}")]
         public async Task<IActionResult> RegisterForContest(string contestId, [FromBody] RegisterForContestModel registrationModel)
         {
             if (!ModelState.IsValid)
@@ -36,17 +36,22 @@ namespace OnlineContestManagement.Controllers
                 return BadRequest(ModelState);
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
             registrationModel.ContestId = contestId;
+            registrationModel.UserId = userId;
 
             var result = await _registrationService.RegisterUserForContestAsync(registrationModel);
             if (result)
             {
-                await _emailService.SendRegistrationConfirmation(registrationModel.Email, contestId);
                 return Ok(new { Message = "Registration successful." });
             }
             return BadRequest(new { Message = "Registration failed." });
         }
-
         [HttpPost("withdraw")]
         public async Task<IActionResult> WithdrawFromContest(string contestId, [FromBody] WithdrawFromContestModel withdrawModel)
         {

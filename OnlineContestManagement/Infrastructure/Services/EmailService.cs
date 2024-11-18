@@ -1,38 +1,71 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _configuration;
+        private readonly SmtpSettings _smtpSettings;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IOptions<SmtpSettings> smtpSettings)
         {
-            _configuration = configuration;
+            _smtpSettings = smtpSettings.Value;
+            Console.WriteLine($"SMTP Username: {_smtpSettings.Username}");
+            Console.WriteLine($"SMTP FromName: {_smtpSettings.FromName}");
         }
 
-        public async Task SendRegistrationConfirmation(string from, string to)
+        public async Task SendRegistrationConfirmation(string to, string contestId)
         {
-            var host = _configuration["SmtpSettings:Host"];
-            var port = int.Parse(_configuration["SmtpSettings:Port"]);
-            var username = _configuration["SmtpSettings:Username"];
-            var password = _configuration["SmtpSettings:Password"];
-            var useSsl = bool.Parse(_configuration["SmtpSettings:UseSSL"]);
-
-            var message = new MailMessage(from, to)
+            if (string.IsNullOrWhiteSpace(_smtpSettings.Username))
             {
+                throw new InvalidOperationException("SMTP Username is not configured");
+            }
+
+
+            var htmlTemplate = File.ReadAllText("Templates/RegistrationConfirmationTemplate.html");
+            var emailBody = htmlTemplate
+                .Replace("{{recipientName}}", "Contestant")
+                .Replace("{{contestId}}", contestId);
+
+            var message = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, _smtpSettings.FromName ?? _smtpSettings.Username),
                 Subject = "Registration Confirmation",
-                Body = "Thank you for registering!"
+                Body = emailBody,
+                IsBodyHtml = true
             };
+            message.To.Add(to);
 
-            using (var smtpClient = new SmtpClient(host, port))
+            using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
             {
-                smtpClient.Credentials = new NetworkCredential(username, password);
-                smtpClient.EnableSsl = useSsl;
+                smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
+                smtpClient.EnableSsl = _smtpSettings.UseSSL;
                 await smtpClient.SendMailAsync(message);
             }
         }
+
+        public async Task SendWithdrawalConfirmation(string to, string contestId)
+        {
+            var htmlTemplate = File.ReadAllText("Templates/WithdrawalConfirmationTemplate.html");
+            var emailBody = htmlTemplate.Replace("{{contestId}}", contestId);
+            Console.WriteLine("Sending withdrawal confirmation email to " + to);
+            var message = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, _smtpSettings.FromName),
+                Subject = "Withdrawal Confirmation",
+                Body = emailBody,
+                IsBodyHtml = true
+            };
+            message.To.Add(to);
+
+            using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
+            {
+                smtpClient.EnableSsl = _smtpSettings.UseSSL;
+                smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
+                await smtpClient.SendMailAsync(message);
+            }
+        }
+
     }
 }

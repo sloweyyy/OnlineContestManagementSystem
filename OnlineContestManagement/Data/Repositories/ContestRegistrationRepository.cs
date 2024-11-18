@@ -18,14 +18,22 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 
     public async Task<bool> RegisterUserAsync(ContestRegistration registration)
     {
-        await _collection.InsertOneAsync(registration); 
+        await _collection.InsertOneAsync(registration);
         return true;
     }
 
-    public async Task<bool> WithdrawUserAsync(string contestId, string userId)
+    public async Task WithdrawUserAsync(string contestId, string userId)
     {
-        var result = await _collection.DeleteOneAsync(r => r.ContestId == contestId && ObjectId.Parse(r.UserId) == ObjectId.Parse(userId));
-        return result.DeletedCount > 0;
+        var filter = Builders<ContestRegistration>.Filter.And(
+            Builders<ContestRegistration>.Filter.Eq(cr => cr.ContestId, contestId),
+            Builders<ContestRegistration>.Filter.Eq(cr => cr.UserId, userId)
+        );
+
+        var update = Builders<ContestRegistration>.Update
+            .Set(cr => cr.Status, "Withdrawn")
+            .Set(cr => cr.WithdrawalDate, DateTime.UtcNow);
+
+        await _collection.UpdateOneAsync(filter, update);
     }
 
     public async Task<List<ContestRegistration>> GetRegistrationsByContestIdAsync(string contestId)
@@ -58,7 +66,7 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
     public async Task<List<ContestRegistration>> GetRegistrationsByUserIdAsync(string userId)
     {
         var filter = Builders<ContestRegistration>.Filter.Eq(r => r.UserId, userId);
-        return await _collection.Find(filter).ToListAsync(); // Sử dụng _collection thay vì _registrations
+        return await _collection.Find(filter).ToListAsync();
     }
 
     public async Task<List<Contest>> GetContestsByUserIdAsync(string userId)
@@ -69,5 +77,11 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
         var contestIds = registrations.ConvertAll(r => r.ContestId);
         var contestFilter = Builders<Contest>.Filter.In(c => c.Id, contestIds);
         return await _contestCollection.Find(contestFilter).ToListAsync();
+    }
+
+    public async Task<ContestRegistration> GetRegistrationByUserIdAndContestIdAsync(string contestId, string userId)
+    {
+        var filter = Builders<ContestRegistration>.Filter.Eq(r => r.ContestId, contestId) & Builders<ContestRegistration>.Filter.Eq(r => r.UserId, userId);
+        return await _collection.Find(filter).FirstOrDefaultAsync();
     }
 }
