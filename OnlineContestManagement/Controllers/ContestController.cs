@@ -55,6 +55,21 @@ namespace OnlineContestManagement.Controllers
       }
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAllContests()
+    {
+      try
+      {
+        var contests = await _contestService.GetAllContestsAsync();
+        return Ok(contests);
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(new { Message = "Error retrieving all contests", Error = ex.Message });
+      }
+    }
+
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateContest(string id, [FromBody] UpdateContestModel model)
     {
