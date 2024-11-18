@@ -1,48 +1,92 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>Withdrawal Confirmation</title>
-  <style>
+  <style media="all" type="text/css">
     body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      background-color: #f4f4f9;
+      font-family: Helvetica, sans-serif;
+      font-size: 16px;
+      background-color: #f4f5f6;
       margin: 0;
       padding: 0;
+      -webkit-font-smoothing: antialiased;
     }
+
     .container {
       max-width: 600px;
-      margin: 20px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin: 0 auto;
+      padding: 24px;
     }
-    h1 {
-      color: #333;
+
+    .main {
+      background: #ffffff;
+      border: 1px solid #eaebed;
+      border-radius: 8px;
+      padding: 24px;
     }
-    p {
-      color: #555;
-    }
+
     .footer {
-      margin-top: 20px;
-      font-size: 0.9em;
-      color: #777;
+      text-align: center;
+      font-size: 14px;
+      color: #9a9ea6;
+      margin-top: 24px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333333;
+    }
+
+    p {
+      font-size: 16px;
+      color: #555555;
+      margin-bottom: 16px;
+    }
+
+    .contest-id {
+      font-weight: bold;
+      color: #e63946;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 12px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #e63946;
+      color: #333333;
+    }
+
+    a {
+      color: #0867ec;
+      text-decoration: none;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>Withdrawal Confirmation</h1>
-    <p>Dear Contestant,</p>
-    <p>You have successfully withdrawn from the contest with ID: <strong>{{contestId}}</strong>.</p>
-    <p>We hope to see you participate in future contests. If you have any questions, feel free to reach out to us.</p>
+    <div class="main">
+      <h1>Withdrawal Confirmation</h1>
+      <p>Dear {{recipientName}},</p>
+      <p>This is to confirm that you have successfully withdrawn from the contest with ID 
+        <span class="contest-id">{{contestId}}</span>.</p>
+      <p>We’re sorry to see you go, but we hope to see you participating in our future contests!</p>
+      <div class="note">
+        <p>If you have any questions or need assistance, feel free to contact us at 
+          <a href="mailto:support@example.com">support@example.com</a>.
+        </p>
+      </div>
+      <p>Thank you for your interest in our contests, and we wish you all the best!</p>
+    </div>
     <div class="footer">
       <p>Kontext</p>
       <p>Don’t like these emails? <a href="https://www.slowey.works/">Unsubscribe</a>.</p>
     </div>
   </div>
 </body>
+
 </html>

@@ -48,7 +48,9 @@ namespace OnlineContestManagement.Infrastructure.Services
         public async Task SendWithdrawalConfirmation(string to, string contestId)
         {
             var htmlTemplate = File.ReadAllText("Templates/WithdrawalConfirmationTemplate.html");
-            var emailBody = htmlTemplate.Replace("{{contestId}}", contestId);
+            var emailBody = htmlTemplate
+            .Replace("{{contestId}}", contestId)
+            .Replace("{{recipientName}}", "Contestant");
             Console.WriteLine("Sending withdrawal confirmation email to " + to);
             var message = new MailMessage
             {

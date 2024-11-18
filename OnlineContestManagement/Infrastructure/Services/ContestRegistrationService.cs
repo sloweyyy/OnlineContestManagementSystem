@@ -20,6 +20,12 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         public async Task<bool> RegisterUserForContestAsync(RegisterForContestModel registrationModel)
         {
+            var existingRegistration = await _registrationRepository.GetRegistrationByUserIdAndContestIdAsync(registrationModel.ContestId, registrationModel.UserId);
+            if (existingRegistration != null)
+            {
+                return false;
+            }
+
             var registration = new ContestRegistration
             {
                 ContestId = registrationModel.ContestId,
@@ -43,9 +49,15 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         public async Task<bool> WithdrawUserFromContestAsync(WithdrawFromContestModel withdrawModel)
         {
+            var registration = await _registrationRepository.GetRegistrationByUserIdAndContestIdAsync(withdrawModel.ContestId, withdrawModel.UserId);
+
+            if (registration == null || registration.Status == "Withdrawn")
+            {
+                return false;
+            }
+
             await _registrationRepository.WithdrawUserAsync(withdrawModel.ContestId, withdrawModel.UserId);
 
-            var registration = await _registrationRepository.GetRegistrationByUserIdAndContestIdAsync(withdrawModel.ContestId, withdrawModel.UserId);
             if (registration != null)
             {
                 await _emailService.SendWithdrawalConfirmation(registration.Email, withdrawModel.ContestId);
