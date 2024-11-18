@@ -1,23 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using OnlineContestManagement.Data;
-using OnlineContestManagement.Data.Models;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using OnlineContestManagement.Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 
 namespace OnlineContestManagement
 {
@@ -63,16 +51,17 @@ namespace OnlineContestManagement
             // Add HttpContextAccessor
             services.AddHttpContextAccessor();
 
+            // Configure SmtpClient
+            // Configure SmtpClient from environment variables
+
             // Configure MongoDB
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbSettings"));
             services.AddSingleton<IMongoClient>(sp =>
             {
-                var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
                 return new MongoClient(Configuration["MONGODB_CONNECTIONSTRING"]);
             });
             services.AddSingleton<IMongoDatabase>(sp =>
             {
-                var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>().Value;
                 var client = sp.GetRequiredService<IMongoClient>();
                 return client.GetDatabase(Configuration["MONGODB_DATABASE_NAME"]);
             });
@@ -81,14 +70,14 @@ namespace OnlineContestManagement
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IContestRepository, ContestRepository>();
+            services.AddScoped<IContestRegistrationRepository, ContestRegistrationRepository>();
 
             // Configure Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IContestService, ContestService>();
-
-            // Configure Password Hasher
-            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            services.AddScoped<IContestRegistrationService, ContestRegistrationService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             // Configure JWT Authentication
             var jwtSettings = new JwtSettings
@@ -128,6 +117,21 @@ namespace OnlineContestManagement
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
                 };
+            });
+
+            services.AddSingleton(sp =>
+            {
+                var smtpSettings = new SmtpSettings
+                {
+                    Host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? throw new Exception("SMTP_HOST environment variable not set"),
+                    Port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? throw new Exception("SMTP_PORT environment variable not set")),
+                    Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? throw new Exception("SMTP_USERNAME environment variable not set"),
+                    Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new Exception("SMTP_PASSWORD environment variable not set"),
+                    UseSSL = bool.Parse(Environment.GetEnvironmentVariable("SMTP_USE_SSL") ?? throw new Exception("SMTP_USE_SSL environment variable not set")),
+                    UseTLS = bool.Parse(Environment.GetEnvironmentVariable("SMTP_USE_TLS") ?? "false"),
+                    FromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? throw new Exception("SMTP_FROM_NAME environment variable not set")
+                };
+                return smtpSettings;
             });
 
             // Add CORS policy

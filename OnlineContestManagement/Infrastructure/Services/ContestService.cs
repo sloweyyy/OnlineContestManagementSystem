@@ -58,6 +58,12 @@ namespace OnlineContestManagement.Infrastructure.Services
       return contest;
     }
 
+    public async Task<List<Contest>> GetAllContestsAsync()
+    {
+      return await _contestRepository.GetAllContestsAsync();
+    }
+
+
     public async Task<Contest> GetContestDetailsAsync(string id)
     {
       return await _contestRepository.GetContestByIdAsync(id);

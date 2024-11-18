@@ -3,7 +3,6 @@ using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using OnlineContestManagement.Data.Models;
-using DotNetEnv;
 
 public class Program
 {
@@ -34,6 +33,9 @@ public class Program
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IContestRegistrationRepository, ContestRegistrationRepository>();
+        builder.Services.AddScoped<IContestRegistrationService, ContestRegistrationService>();
+        builder.Services.AddScoped<IEmailService, EmailService>();
 
         // Run Startup to configure services and middleware
         var startup = new Startup(builder.Configuration);

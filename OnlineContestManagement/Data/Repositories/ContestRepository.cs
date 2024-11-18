@@ -1,7 +1,7 @@
 using OnlineContestManagement.Data.Models;
 using MongoDB.Driver;
 using MongoDB.Bson;
-using OnlineContestManagement.Models; // Add this line
+using OnlineContestManagement.Models;
 
 namespace OnlineContestManagement.Data.Repositories
 {
@@ -23,6 +23,12 @@ namespace OnlineContestManagement.Data.Repositories
     {
       return await _contests.Find(c => c.Id == id).FirstOrDefaultAsync();
     }
+
+    public async Task<List<Contest>> GetAllContestsAsync()
+    {
+      return await _contests.Find(Builders<Contest>.Filter.Empty).ToListAsync();
+    }
+
 
     public async Task<Contest> UpdateContestAsync(string id, Contest contest)
     {

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Registration Confirmation</title>
+  <style media="all" type="text/css">
+    body {
+      font-family: Helvetica, sans-serif;
+      font-size: 16px;
+      background-color: #f4f5f6;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .main {
+      background: #ffffff;
+      border: 1px solid #eaebed;
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: #9a9ea6;
+      margin-top: 24px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333333;
+    }
+
+    p {
+      font-size: 16px;
+      color: #555555;
+      margin-bottom: 16px;
+    }
+
+    .contest-id {
+      font-weight: bold;
+      color: #0867ec;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 12px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #0867ec;
+      color: #333333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="main">
+      <h1>Registration Confirmation</h1>
+      <p>Dear {{recipientName}},</p>
+      <p>We are thrilled to confirm your registration for the contest with ID <span class="contest-id">{{contestId}}</span>.</p>
+      <p>Please make a note of your contest details and ensure you check your email regularly for updates.</p>
+      <div class="note">
+        <p>If you have any questions or need assistance, feel free to contact us at <a href="mailto:support@example.com">support@example.com</a>.</p>
+      </div>
+      <p>Thank you for participating, and best of luck in the contest!</p>
+    </div>
+    <div class="footer">
+      <p>Kontext</p>
+      <p>Don’t like these emails? <a href="https://www.slowey.works/">Unsubscribe</a>.</p>
+    </div>
+  </div>
+</body>
+
+</html>
