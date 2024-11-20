@@ -78,6 +78,7 @@ namespace OnlineContestManagement
             services.AddScoped<IContestService, ContestService>();
             services.AddScoped<IContestRegistrationService, ContestRegistrationService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
             // Configure JWT Authentication
             var jwtSettings = new JwtSettings

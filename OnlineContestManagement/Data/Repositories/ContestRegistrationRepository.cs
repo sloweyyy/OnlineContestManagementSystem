@@ -84,4 +84,15 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
         var filter = Builders<ContestRegistration>.Filter.Eq(r => r.ContestId, contestId) & Builders<ContestRegistration>.Filter.Eq(r => r.UserId, userId);
         return await _collection.Find(filter).FirstOrDefaultAsync();
     }
+
+    public async Task<int> CountRegistrationsByDateAsync(DateTime date)
+    {
+        var filter = Builders<ContestRegistration>.Filter.And(
+            Builders<ContestRegistration>.Filter.Gte(r => r.RegistrationDate, date.Date),
+            Builders<ContestRegistration>.Filter.Lt(r => r.RegistrationDate, date.Date.AddDays(1))
+        );
+
+        return (int)await _collection.CountDocumentsAsync(filter);
+    }
+
 }
