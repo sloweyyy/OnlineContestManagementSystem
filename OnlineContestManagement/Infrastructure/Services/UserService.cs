@@ -12,11 +12,67 @@ namespace OnlineContestManagement.Infrastructure.Services
 {
     public class UserService : IUserService
     {
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
-        public UserService(IConfiguration configuration)
+
+        public UserService(IUserRepository userRepository, IConfiguration configuration)
         {
-            _configuration = configuration;
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+
+
+        public async Task<User> CreateUserAsync(User user)
+        {
+            await _userRepository.CreateUserAsync(user);
+            return user;
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _userRepository.GetAllUsersAsync();
+        }
+
+        public async Task<User> GetUserByIdAsync(string id)
+        {
+            return await _userRepository.GetUserByIdAsync(id);
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> UpdateUserAsync(string id, User updateUserBody)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+                return (false, "User not found.", 404);
+
+            if (!string.IsNullOrWhiteSpace(updateUserBody.Email))
+                user.Email = updateUserBody.Email;
+
+            if (!string.IsNullOrWhiteSpace(updateUserBody.FullName))
+                user.FullName = updateUserBody.FullName;
+
+            if (!string.IsNullOrWhiteSpace(updateUserBody.PhoneNumber))
+                user.PhoneNumber = updateUserBody.PhoneNumber;
+
+            try
+            {
+                await _userRepository.UpdateUserAsync(user);
+                return (true, "User updated successfully.", 200);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Internal server error: {ex.Message}", 500);
+            }
+        }
+
+        public async Task<(bool Success, string Message, int StatusCode)> DeleteUserAsync(string id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+                return (false, "User not found.", 404);
+
+            await _userRepository.DeleteUserAsync(id);
+            return (true, "User deleted successfully.", 204);
         }
 
         public async Task<string> GenerateJwtTokenAsync(User user)
@@ -41,5 +97,12 @@ namespace OnlineContestManagement.Infrastructure.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            return await _userRepository.GetUserByEmailAsync(email);
+        }
+
+
     }
 }

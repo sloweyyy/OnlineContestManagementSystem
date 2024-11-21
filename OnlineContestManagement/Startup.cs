@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using OnlineContestManagement.Infrastructure;
+using System.Security.Claims;
 
 namespace OnlineContestManagement
 {
@@ -78,6 +79,7 @@ namespace OnlineContestManagement
             services.AddScoped<IContestService, ContestService>();
             services.AddScoped<IContestRegistrationService, ContestRegistrationService>();
             services.AddScoped<IEmailService, EmailService>();
+
 
             // Configure JWT Authentication
             var jwtSettings = new JwtSettings

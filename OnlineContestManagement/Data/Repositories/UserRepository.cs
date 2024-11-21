@@ -24,7 +24,28 @@ namespace OnlineContestManagement.Data.Repositories
 
         public async Task<User> GetUserByIdAsync(string userId)
         {
-            return await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                Console.WriteLine($"User with Id {userId} not found.");
+            }
+            return user;
+        }
+
+
+        public async Task UpdateUserAsync(User user)
+        {
+            await _users.ReplaceOneAsync(u => u.Id == user.Id, user);
+        }
+
+        public async Task DeleteUserAsync(string userId)
+        {
+            await _users.DeleteOneAsync(u => u.Id == userId);
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _users.Find(u => true).ToListAsync();
         }
     }
 }
