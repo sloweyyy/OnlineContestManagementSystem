@@ -87,7 +87,7 @@ namespace OnlineContestManagement.Controllers
             }
         }
 
-        [Authorize]
+
         [HttpPost("revoke-token")]
         public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequest request)
         {
