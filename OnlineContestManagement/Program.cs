@@ -36,6 +36,14 @@ public class Program
         builder.Services.AddScoped<IContestRegistrationRepository, ContestRegistrationRepository>();
         builder.Services.AddScoped<IContestRegistrationService, ContestRegistrationService>();
         builder.Services.AddScoped<IEmailService, EmailService>();
+        builder.Services.AddScoped<IDashboardService, DashboardService>();
+
+        //Set Policy
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AdminOnly", policy =>
+                policy.RequireRole("Admin")); 
+        });
 
         // Run Startup to configure services and middleware
         var startup = new Startup(builder.Configuration);

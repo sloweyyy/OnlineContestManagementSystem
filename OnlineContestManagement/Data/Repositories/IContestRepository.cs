@@ -11,5 +11,6 @@ namespace OnlineContestManagement.Data.Repositories
     Task<Contest> UpdateContestAsync(string id, Contest contest);
     Task DeleteContestAsync(string id);
     Task<List<Contest>> SearchContestsAsync(ContestSearchFilter filter);
-  }
+    Task<int> CountContestsByDateAsync(DateTime date);
+    }
 }
