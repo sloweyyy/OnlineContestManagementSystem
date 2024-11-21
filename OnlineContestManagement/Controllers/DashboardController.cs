@@ -7,7 +7,7 @@ namespace OnlineContestManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Policy = "AdminOnly")] // Chỉ Admin có quyền truy cập
+    [Authorize(Policy = "AdminOnly")]
     public class DashboardController : ControllerBase
     {
         private readonly IDashboardService _dashboardService;
