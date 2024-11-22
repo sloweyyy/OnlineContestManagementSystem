@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineContestManagement.Data.Models;
@@ -118,6 +119,25 @@ namespace OnlineContestManagement.Controllers
       catch (Exception ex)
       {
         return BadRequest(new { Message = "Error searching contests", Error = ex.Message });
+      }
+    }
+
+    [HttpGet("creator/{creatorId}")]
+    public async Task<IActionResult> GetContestsByCreatorId(string creatorId)
+    {
+      if (!User.IsInRole("Admin") && User.FindFirstValue(ClaimTypes.NameIdentifier) != creatorId)
+      {
+        return Forbid();
+      }
+
+      try
+      {
+        var contests = await _contestService.GetContestsByCreatorIdAsync(creatorId);
+        return Ok(contests);
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(new { Message = "Error retrieving contests by creator", Error = ex.Message });
       }
     }
   }

@@ -98,13 +98,20 @@ namespace OnlineContestManagement.Data.Repositories
       return await _contests.Find(builder).ToListAsync();
     }
     public async Task<int> CountContestsByDateAsync(DateTime date)
-        {
-            var filter = Builders<Contest>.Filter.And(
-                Builders<Contest>.Filter.Gte(c => c.StartDate, date.Date),
-                Builders<Contest>.Filter.Lt(c => c.StartDate, date.Date.AddDays(1))
-            );
+    {
+      var filter = Builders<Contest>.Filter.And(
+          Builders<Contest>.Filter.Gte(c => c.StartDate, date.Date),
+          Builders<Contest>.Filter.Lt(c => c.StartDate, date.Date.AddDays(1))
+      );
 
-            return (int)await _contests.CountDocumentsAsync(filter);
-        }
+      return (int)await _contests.CountDocumentsAsync(filter);
     }
+
+
+
+    public async Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId)
+    {
+      return await _contests.Find(c => c.CreatorUserId == creatorId).ToListAsync();
+    }
+  }
 }
