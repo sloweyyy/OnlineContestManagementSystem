@@ -33,6 +33,8 @@ namespace OnlineContestManagement.Models
 
     [Required]
     public string ImageUrl { get; set; }
+    [Required]
+    public decimal EntryFee { get; set; }
   }
 
   public class UpdateContestModel
@@ -56,6 +58,7 @@ namespace OnlineContestManagement.Models
     public OrganizationInformationModel OrganizationInformation { get; set; }
 
     public string ImageUrl { get; set; }
+    public decimal EntryFee { get; set; }
   }
 
   public class ContestSearchFilter

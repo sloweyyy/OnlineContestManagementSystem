@@ -19,6 +19,7 @@
     <PackageReference Include="MongoDB.Bson" Version="3.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
     <PackageReference Include="NuGet.PackageManagement" Version="6.11.1" />
+    <PackageReference Include="payOS" Version="1.0.9" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.9.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />

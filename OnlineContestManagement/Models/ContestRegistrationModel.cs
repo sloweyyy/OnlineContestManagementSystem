@@ -7,9 +7,6 @@ namespace OnlineContestManagement.Models
     public class RegisterForContestModel
     {
         [Required]
-        public string ContestId { get; set; }
-
-        [Required]
         public string UserId { get; set; }
 
         [Required]
@@ -40,4 +37,13 @@ namespace OnlineContestManagement.Models
         public string? UserId { get; set; }
         public string? Status { get; set; }
     }
+
+    public class RegistrationResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string Error { get; set; }
+        public string PaymentLink { get; set; }
+    }
+
 }

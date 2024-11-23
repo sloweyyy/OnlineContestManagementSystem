@@ -40,20 +40,17 @@ namespace OnlineContestManagement.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("User ID not found in token.");
-            }
 
-            registrationModel.ContestId = contestId;
             registrationModel.UserId = userId;
 
-            var result = await _registrationService.RegisterUserForContestAsync(registrationModel);
-            if (result)
+            var result = await _registrationService.RegisterUserForContestAsync(contestId, registrationModel);
+
+            if (result.Success)
             {
-                return Ok(new { Message = "Registration successful." });
+                return Ok(new { Message = result.Message, PaymentLink = result.PaymentLink });
             }
-            return BadRequest(new { Message = "Registration failed." });
+
+            return BadRequest(new { Message = result.Error });
         }
         [HttpPost("withdraw")]
         public async Task<IActionResult> WithdrawFromContest(string contestId, [FromBody] WithdrawFromContestModel withdrawModel)

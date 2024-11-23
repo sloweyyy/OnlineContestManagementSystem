@@ -2,9 +2,7 @@ using OnlineContestManagement.Data.Models;
 using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Models;
 using System.Security.Claims;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Microsoft.Extensions.Configuration;
+
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
@@ -12,26 +10,16 @@ namespace OnlineContestManagement.Infrastructure.Services
   {
     private readonly IContestRepository _contestRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly Cloudinary _cloudinary;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
 
 
-    public ContestService(IContestRepository contestRepository, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+    public ContestService(IContestRepository contestRepository, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IEmailService emailService)
     {
       _contestRepository = contestRepository ?? throw new ArgumentNullException(nameof(contestRepository));
       _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
       _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-
-      // Configure Cloudinary
-      // var cloudinaryAccount = new Account(
-      //   _configuration["Cloudinary:CloudName"],
-      //   _configuration["Cloudinary:ApiKey"],
-      //   _configuration["Cloudinary:ApiSecret"]
-      // );
-      // System.Console.WriteLine("Cloudinary account: " + cloudinaryAccount.ApiKey);
-      // System.Console.WriteLine("Cloudinary account: " + cloudinaryAccount.ApiSecret);
-      // System.Console.WriteLine("Cloudinary account: " + cloudinaryAccount.Cloud);
-      // _cloudinary = new Cloudinary(cloudinaryAccount);
+      _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
     }
 
     public async Task<Contest> CreateContestAsync(CreateContestModel model)
@@ -50,8 +38,8 @@ namespace OnlineContestManagement.Infrastructure.Services
         ParticipantInformationRequirements = model.ParticipantInformationRequirements,
         CreatorUserId = userId,
         OrganizationInformation = model.OrganizationInformation,
-        // ImageUrl = await UploadImageToCloudinary(model.ImageUrl)
-        ImageUrl = model.ImageUrl
+        ImageUrl = model.ImageUrl,
+        EntryFee = model.EntryFee
       };
 
       await _contestRepository.CreateContestAsync(contest);
@@ -85,8 +73,8 @@ namespace OnlineContestManagement.Infrastructure.Services
         ParticipantInformationRequirements = model.ParticipantInformationRequirements,
         CreatorUserId = userId,
         OrganizationInformation = model.OrganizationInformation,
-        // ImageUrl = await UploadImageToCloudinary(model.ImageUrl)
-        ImageUrl = model.ImageUrl
+        ImageUrl = model.ImageUrl,
+        EntryFee = model.EntryFee
       };
 
       return await _contestRepository.UpdateContestAsync(id, contest);
@@ -102,21 +90,33 @@ namespace OnlineContestManagement.Infrastructure.Services
       return await _contestRepository.SearchContestsAsync(filter);
     }
 
-    private async Task<string> UploadImageToCloudinary(string imageData)
-    {
-      var uploadParams = new ImageUploadParams()
-      {
-        File = new FileDescription("contest_image.jpg", new MemoryStream(Convert.FromBase64String(imageData))),
-        PublicId = "contests/" + Guid.NewGuid().ToString(),
-        Transformation = new Transformation().Width(800).Height(600).Crop("fill")
-      };
-      var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-      return uploadResult.SecureUrl.ToString();
-    }
-
     public async Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId)
     {
       return await _contestRepository.GetContestsByCreatorIdAsync(creatorId);
     }
+    public async Task ApproveContestAsync(string id)
+    {
+      var contest = await _contestRepository.GetContestByIdAsync(id);
+      if (contest == null)
+      {
+        throw new Exception("Contest not found.");
+      }
+      contest.Status = "approved";
+      await _contestRepository.UpdateContestAsync(id, contest);
+      await _emailService.SendContestUpdateNotification(contest.OrganizationInformation.OrgEmail, contest.OrganizationInformation.OrgName, contest.Name, "approved");
+    }
+
+    public async Task RejectContestAsync(string id)
+    {
+      var contest = await _contestRepository.GetContestByIdAsync(id);
+      if (contest == null)
+      {
+        throw new Exception("Contest not found.");
+      }
+      contest.Status = "rejected";
+      await _contestRepository.UpdateContestAsync(id, contest);
+      await _emailService.SendContestUpdateNotification(contest.OrganizationInformation.OrgEmail, contest.OrganizationInformation.OrgName, contest.Name, "rejected");
+    }
+
   }
 }

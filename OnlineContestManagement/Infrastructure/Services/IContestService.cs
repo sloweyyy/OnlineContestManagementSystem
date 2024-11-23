@@ -12,5 +12,8 @@ namespace OnlineContestManagement.Infrastructure.Services
     Task DeleteContestAsync(string id);
     Task<List<Contest>> SearchContestsAsync(ContestSearchFilter filter);
     Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId);
+    Task ApproveContestAsync(string id);
+    Task RejectContestAsync(string id);
+
   }
 }

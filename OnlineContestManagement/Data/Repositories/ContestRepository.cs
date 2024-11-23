@@ -44,7 +44,9 @@ namespace OnlineContestManagement.Data.Repositories
           .Set(c => c.Prizes, contest.Prizes)
           .Set(c => c.ParticipantInformationRequirements, contest.ParticipantInformationRequirements)
           .Set(c => c.OrganizationInformation, contest.OrganizationInformation)
-          .Set(c => c.ImageUrl, contest.ImageUrl);
+          .Set(c => c.ImageUrl, contest.ImageUrl)
+          .Set(c => c.EntryFee, contest.EntryFee)
+          .Set(c => c.Status, contest.Status);
 
       var result = await _contests.UpdateOneAsync(filter, update);
       if (result.ModifiedCount == 1)
