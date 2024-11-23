@@ -113,5 +113,10 @@ namespace OnlineContestManagement.Infrastructure.Services
       var uploadResult = await _cloudinary.UploadAsync(uploadParams);
       return uploadResult.SecureUrl.ToString();
     }
+
+    public async Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId)
+    {
+      return await _contestRepository.GetContestsByCreatorIdAsync(creatorId);
+    }
   }
 }

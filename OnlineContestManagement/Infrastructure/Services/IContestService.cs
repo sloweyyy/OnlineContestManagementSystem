@@ -11,5 +11,6 @@ namespace OnlineContestManagement.Infrastructure.Services
     Task<Contest> UpdateContestAsync(string id, UpdateContestModel model);
     Task DeleteContestAsync(string id);
     Task<List<Contest>> SearchContestsAsync(ContestSearchFilter filter);
+    Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId);
   }
 }

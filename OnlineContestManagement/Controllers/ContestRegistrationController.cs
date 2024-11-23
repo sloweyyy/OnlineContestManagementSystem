@@ -17,15 +17,18 @@ namespace OnlineContestManagement.Controllers
         private readonly IContestRegistrationRepository _registrationRepository;
         private readonly IEmailService _emailService;
         private readonly IContestRegistrationService _registrationService;
+        private readonly IContestService _contestService;
 
         public ContestRegistrationController(
             IContestRegistrationRepository registrationRepository,
             IEmailService emailService,
-            IContestRegistrationService registrationService)
+            IContestRegistrationService registrationService,
+            IContestService contestService)
         {
             _registrationRepository = registrationRepository;
             _emailService = emailService;
             _registrationService = registrationService;
+            _contestService = contestService;
         }
 
         [HttpPost("{contestId}")]
@@ -84,7 +87,16 @@ namespace OnlineContestManagement.Controllers
                 return NotFound(new { Message = "No registrations found for this user." });
             }
 
-            return Ok(registrations);
+            var result = registrations.Select(async r => new
+            {
+                r.ContestId,
+                ContestDetails = await _contestService.GetContestDetailsAsync(r.ContestId),
+                r.RegistrationDate,
+                r.Status
+            }).ToList();
+
+
+            return Ok(result);
         }
     }
 }
