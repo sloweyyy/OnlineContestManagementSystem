@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using OnlineContestManagement.Infrastructure;
 using System.Security.Claims;
+using Net.payOS;
 
 namespace OnlineContestManagement
 {
@@ -72,6 +73,7 @@ namespace OnlineContestManagement
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IContestRepository, ContestRepository>();
             services.AddScoped<IContestRegistrationRepository, ContestRegistrationRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
 
             // Configure Services
             services.AddScoped<IUserService, UserService>();
@@ -80,6 +82,7 @@ namespace OnlineContestManagement
             services.AddScoped<IContestRegistrationService, ContestRegistrationService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
 
             // Configure JWT Authentication
@@ -136,6 +139,18 @@ namespace OnlineContestManagement
                 };
                 return smtpSettings;
             });
+
+            services.AddSingleton(sp =>
+            {
+                var payOS = new PayOSSettings
+                {
+                    ClientId = Environment.GetEnvironmentVariable("PAYOS_CLIENT_ID") ?? throw new Exception("PAYOS_CLIENT_ID environment variable not set"),
+                    ApiKey = Environment.GetEnvironmentVariable("PAYOS_API_KEY") ?? throw new Exception("PAYOS_API_KEY environment variable not set"),
+                    ChecksumKey = Environment.GetEnvironmentVariable("PAYOS_CHECKSUM_KEY") ?? throw new Exception("PAYOS_CHECKSUM_KEY environment variable not set")
+                };
+                return payOS;
+            });
+
 
             // Add CORS policy
             services.AddCors(options =>

@@ -21,6 +21,8 @@ namespace OnlineContestManagement.Data.Models
     public string CreatorUserId { get; set; }
     public OrganizationInformationModel OrganizationInformation { get; set; }
     public string ImageUrl { get; set; }
+    public decimal EntryFee { get; set; }
+    public string Status { get; set; } = "pending";
 
   }
 }

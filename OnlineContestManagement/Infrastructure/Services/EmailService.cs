@@ -69,5 +69,30 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
         }
 
+        public async Task SendContestUpdateNotification(string to, string orgName, string contestName, string updateType)
+        {
+            var htmlTemplate = File.ReadAllText("Templates/ContestUpdateNotificationTemplate.html");
+            var emailBody = htmlTemplate
+            .Replace("{{recipientName}}", orgName)
+            .Replace("{{contestName}}", contestName)
+            .Replace("{{updateType}}", updateType);
+            Console.WriteLine("Sending contest update notification email to " + to);
+            var message = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, _smtpSettings.FromName),
+                Subject = "Contest Update Notification",
+                Body = emailBody,
+                IsBodyHtml = true
+            };
+            message.To.Add(to);
+
+            using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
+            {
+                smtpClient.EnableSsl = _smtpSettings.UseSSL;
+                smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
+                await smtpClient.SendMailAsync(message);
+            }
+
+        }
     }
 }

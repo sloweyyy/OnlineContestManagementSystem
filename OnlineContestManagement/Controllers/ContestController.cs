@@ -61,7 +61,16 @@ namespace OnlineContestManagement.Controllers
     {
       try
       {
-        var contests = await _contestService.GetAllContestsAsync();
+        List<Contest> contests;
+        if (User.IsInRole("Admin"))
+        {
+          contests = await _contestService.GetAllContestsAsync();
+        }
+        else
+        {
+          var allContests = await _contestService.GetAllContestsAsync();
+          contests = allContests.Where(c => c.Status == "approved").ToList();
+        }
         return Ok(contests);
       }
       catch (Exception ex)
@@ -69,7 +78,6 @@ namespace OnlineContestManagement.Controllers
         return BadRequest(new { Message = "Error retrieving all contests", Error = ex.Message });
       }
     }
-
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateContest(string id, [FromBody] UpdateContestModel model)
