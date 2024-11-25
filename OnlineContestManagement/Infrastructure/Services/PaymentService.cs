@@ -50,5 +50,9 @@ namespace OnlineContestManagement.Infrastructure.Services
     {
       return await _payOS.cancelPaymentLink(orderId);
     }
+    public async Task<Payment> GetPaymentByContestIdAndUserIdAsync(string contestId, string userId)
+    {
+      return await _paymentRepository.GetPaymentByContestIdAndUserIdAsync(contestId, userId);
+    }
   }
 }

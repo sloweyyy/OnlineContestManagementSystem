@@ -13,13 +13,16 @@ namespace OnlineContestManagement.Infrastructure.Services
         private readonly IEmailService _emailService;
         private readonly IPaymentService _paymentService;
         private readonly IContestService _contestService;
+        private readonly ILogger<ContestRegistrationService> _logger;
 
-        public ContestRegistrationService(IContestRegistrationRepository registrationRepository, IEmailService emailService, IPaymentService paymentService, IContestService contestService)
+        public ContestRegistrationService(IContestRegistrationRepository registrationRepository, IEmailService emailService, IPaymentService paymentService, IContestService contestService, ILogger<ContestRegistrationService> logger)
         {
             _registrationRepository = registrationRepository;
             _emailService = emailService;
             _paymentService = paymentService;
             _contestService = contestService;
+            _logger = logger;
+
         }
 
 
@@ -28,6 +31,12 @@ namespace OnlineContestManagement.Infrastructure.Services
         {
             try
             {
+                _logger.LogInformation(
+                    "Starting registration process for User {UserId} in Contest {ContestId}",
+                    registrationModel.UserId,
+                    contestId
+                );
+
                 var existingRegistration = await _registrationRepository.GetRegistrationByUserIdAndContestIdAsync(
                     contestId,
                     registrationModel.UserId
@@ -35,6 +44,11 @@ namespace OnlineContestManagement.Infrastructure.Services
 
                 if (existingRegistration != null)
                 {
+                    _logger.LogWarning(
+                        "Duplicate registration attempt - User {UserId} is already registered for Contest {ContestId}",
+                        registrationModel.UserId,
+                        contestId
+                    );
                     return new RegistrationResult
                     {
                         Success = false,
@@ -45,12 +59,24 @@ namespace OnlineContestManagement.Infrastructure.Services
                 var contest = await _contestService.GetContestDetailsAsync(contestId);
                 if (contest == null)
                 {
+                    _logger.LogError(
+                        "Contest {ContestId} not found during registration attempt for User {UserId}",
+                        contestId,
+                        registrationModel.UserId
+                    );
                     return new RegistrationResult
                     {
                         Success = false,
                         Error = "Contest not found"
                     };
                 }
+
+                _logger.LogInformation(
+                    "Creating payment for Contest {ContestId}, User {UserId}, Amount {Amount}",
+                    contestId,
+                    registrationModel.UserId,
+                    contest.EntryFee
+                );
 
                 var payment = new Payment
                 {
@@ -63,11 +89,14 @@ namespace OnlineContestManagement.Infrastructure.Services
                     UserId = registrationModel.UserId
                 };
 
-
-
                 var paymentResult = await _paymentService.CreatePaymentAsync(payment);
                 if (paymentResult == null)
                 {
+                    _logger.LogError(
+                        "Payment creation failed for User {UserId}, Contest {ContestId}",
+                        registrationModel.UserId,
+                        contestId
+                    );
                     return new RegistrationResult
                     {
                         Success = false,
@@ -77,7 +106,7 @@ namespace OnlineContestManagement.Infrastructure.Services
 
                 var registration = new ContestRegistration
                 {
-                    ContestId = contest.Id,
+                    ContestId = contestId,
                     UserId = registrationModel.UserId,
                     Name = registrationModel.Name,
                     DateOfBirth = registrationModel.DateOfBirth,
@@ -87,9 +116,20 @@ namespace OnlineContestManagement.Infrastructure.Services
                     Status = "Pending",
                 };
 
+                _logger.LogInformation(
+                    "Saving registration for User {UserId} in Contest {ContestId}",
+                    registration.UserId,
+                    registration.ContestId
+                );
+
                 var result = await _registrationRepository.RegisterUserAsync(registration);
                 if (!result)
                 {
+                    _logger.LogError(
+                        "Failed to save registration for User {UserId} in Contest {ContestId}",
+                        registration.UserId,
+                        registration.ContestId
+                    );
                     return new RegistrationResult
                     {
                         Success = false,
@@ -97,7 +137,31 @@ namespace OnlineContestManagement.Infrastructure.Services
                     };
                 }
 
-                await _emailService.SendRegistrationConfirmation(registration.Email, registration.ContestId);
+                try
+                {
+                    await _emailService.SendRegistrationConfirmation(registration.Email, registration.ContestId);
+                    _logger.LogInformation(
+                        "Registration confirmation email sent to {Email} for Contest {ContestId}",
+                        registration.Email,
+                        registration.ContestId
+                    );
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(
+                        emailEx,
+                        "Failed to send registration confirmation email to {Email} for Contest {ContestId}",
+                        registration.Email,
+                        registration.ContestId
+                    );
+                    // Continue execution as email sending failure shouldn't block registration
+                }
+
+                _logger.LogInformation(
+                    "Registration completed successfully for User {UserId} in Contest {ContestId}",
+                    registration.UserId,
+                    registration.ContestId
+                );
 
                 return new RegistrationResult
                 {
@@ -106,8 +170,14 @@ namespace OnlineContestManagement.Infrastructure.Services
                     Message = "Registration pending payment confirmation"
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(
+                    ex,
+                    "Unexpected error during registration process for User {UserId} in Contest {ContestId}",
+                    registrationModel.UserId,
+                    contestId
+                );
                 return new RegistrationResult
                 {
                     Success = false,
@@ -144,6 +214,11 @@ namespace OnlineContestManagement.Infrastructure.Services
         public async Task<List<ContestRegistration>> GetContestsByUserIdAsync(string userId)
         {
             return await _registrationRepository.GetRegistrationsByUserIdAsync(userId);
+        }
+
+        public async Task<List<ContestRegistration>> GetRegistrationsByContestIdAsync(string contestId)
+        {
+            return await _registrationRepository.GetRegistrationsByContestIdAsync(contestId);
         }
     }
 }
