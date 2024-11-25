@@ -94,5 +94,4 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 
         return (int)await _collection.CountDocumentsAsync(filter);
     }
-
 }

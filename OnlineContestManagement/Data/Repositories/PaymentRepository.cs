@@ -17,5 +17,11 @@ namespace OnlineContestManagement.Data.Repositories
       await _payments.InsertOneAsync(payment);
       return payment;
     }
+
+    public async Task<Payment> GetPaymentByContestIdAndUserIdAsync(string contestId, string userId)
+    {
+      return await _payments.Find(p => p.ContestId == contestId && p.UserId == userId).FirstOrDefaultAsync();
+    }
+
   }
 }

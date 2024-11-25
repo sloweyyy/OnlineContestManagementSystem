@@ -95,5 +95,16 @@ namespace OnlineContestManagement.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("{contestId}/registrations")]
+        public async Task<IActionResult> GetRegistrationsByContestId(string contestId)
+        {
+            var registrations = await _registrationService.GetRegistrationsByContestIdAsync(contestId);
+            if (registrations == null || registrations.Count == 0)
+            {
+                return NotFound(new { Message = "No registrations found for this contest." });
+            }
+            return Ok(registrations);
+        }
     }
 }

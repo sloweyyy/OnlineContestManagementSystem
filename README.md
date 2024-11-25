@@ -1,6 +1,6 @@
-## Online Contest Management System
+## Online Contest Management System - Backend API
 
-This project implements a comprehensive backend API to manage online contests, offering a user-friendly platform for organizations, companies, or individuals to create, promote, and manage contests, with streamlined registration and payment functionalities.
+This project provides a comprehensive backend API for managing online contests.  It offers a platform for organizations and individuals to create, manage, and promote contests, including streamlined registration and payment processing.
 
 ### Table of Contents
 
@@ -14,85 +14,75 @@ This project implements a comprehensive backend API to manage online contests, o
 
 ### Product Overview
 
-The platform serves as a solution for managing the entire lifecycle of online contests, including creation, posting, promotion, registration management, and payment processing. The primary goal is to simplify contest management for organizers and to enhance accessibility for participants.
+This platform manages the entire lifecycle of online contests: creation, publishing, promotion, registration management, and payment processing.  The primary goal is to simplify contest management for organizers and improve accessibility for participants.
 
 ### Key Features
 
 #### For Contest Organizers:
 
-- **Create New Contests**:
-    - Organizers can create contests with comprehensive details such as name, description, start and end dates, rules, and specific skill requirements.
-    - Allows uploading of attachments like guides, images, or video demonstrations.
-    - Set participation fees (if applicable) and configure online payment options.
-  
-- **Manage Contests**:
-    - Registration Dashboard: Track participant lists, payment status, and personal details.
-    - Application Approval: Manage and approve contestant applications.
-    - Automated Notifications: Send confirmation emails and schedule notifications to contestants.
-
-- **Analytics Tools**:
-    - Registration Statistics: Track the number of registrations.
-    - Participant Demographics: Analyze age, gender, and geographical data.
-    - Revenue Tracking: View statistics for paid contests.
+- **Create New Contests:** Create contests with details like name, description, dates, rules, skill requirements, and attachments (guides, images, videos). Set participation fees and configure online payment options.
+- **Manage Contests:**  Access a registration dashboard to track participants, payment statuses, and personal details. Approve or reject contestant applications and send automated notifications.
+- **Analytics Tools:** Track registration statistics, analyze participant demographics (age, gender, location), and monitor revenue from paid contests.
 
 #### For Users:
 
-- **Account Registration**:
-    - Users can register via email or log in using social accounts (e.g., Facebook, Google).
-
-- **Browse and Register for Contests**:
-    - Search and filter contests based on criteria such as category, age requirements, etc.
-    - View contest details, including description, prizes, requirements, and deadlines.
-    - Register by completing necessary details and make online payments (if required).
-
-- **Profile Management**:
-    - Users can track registered contests, edit their profiles, and update personal details.
+- **Account Registration:** Register via email or social login (e.g., Facebook, Google).
+- **Browse and Register for Contests:** Search and filter contests by criteria (category, age, etc.). View contest details and register, making online payments if required.
+- **Profile Management:** Track registered contests, edit profiles, and update personal details.
 
 #### For System Administrators:
 
-- **Contest Approval**: Review and approve registered contests.
-- **Registration Statistics**: Monitor the number of created contests and registered users.
-- **Revenue Tracking**: Track system revenue generated from contest fees.
+- **Contest Approval:** Review and approve new contests.
+- **Registration Statistics:** Monitor the number of contests and registered users.
+- **Revenue Tracking:** Track overall system revenue.
 
 ### Technologies
 
-- **C#**: Core language for backend API development.
-- **ASP.NET Core**: Framework for building the API.
-- **MongoDB**: NoSQL database to store contest data.
-- **JWT Authentication**: Authentication and authorization via JSON Web Tokens.
+- **C#**: Core backend API language.
+- **ASP.NET Core**: API framework.
+- **MongoDB**: NoSQL database for contest data.
+- **JWT Authentication**: JSON Web Tokens for authentication and authorization.
+- **CloudinaryDotNet**: For image and video uploads.
+- **FirebaseAdmin**: For potentially handling notifications.
+- **Google.Cloud.Storage.V1**: For potentially handling cloud storage.
+- **Microsoft.AspNetCore.Authentication.Google**: For Google authentication.
+- **SendGrid**: For email notifications.
+- **PayOS**: For payment processing.
+- **Swagger**: API documentation.
+- **Github Actions**: CI/CD pipeline.
+
 
 ### Project Structure
 
-- **Controllers**: API controllers to handle requests.
+- **Controllers**: API controllers handling requests.
 - **Data**:
-  - **Models**: Data models for contests and other entities.
-  - **Repositories**: Data access layer to interact with MongoDB.
+    - **Models**: Data models for contests and other entities.
+    - **Repositories**: Data access layer for MongoDB interaction.
 - **Infrastructure**:
-  - **Services**: Contains business logic and data handling.
-- **Models**: Data transfer models between client and API.
+    - **Services**: Business logic and data handling.
+- **Models**: Data transfer objects (DTOs) for communication between client and API.
+- **Templates**: Email templates for confirmations and other notifications.
+
 
 ### Getting Started
 
-1. **Prerequisites**:
+1. **Prerequisites:**
    - .NET 8 SDK
    - MongoDB
-2. **Clone the repository**:
+2. **Clone the repository:**
    - `git clone https://github.com/sloweyyy/OnlineContestManagementSystem-be`
-3. **Install dependencies**:
+3. **Install dependencies:**
    - `dotnet restore`
-4. **Configure MongoDB connection**:
-   - Update the MongoDB connection string in `appsettings.json`.
-5. **Move to project directory**:
-   - `cd OnlineContestManagementSystem`
-6. **Run the application**:
+4. **Configure MongoDB connection:**
+   - Update the MongoDB connection string in `.env` file.  
+5. **Run the application:**
    - `dotnet run`
 
 ### Usage
 
-- **Authentication**: Obtain a valid JWT token for API requests.
-- **Authorization**: Only contest creators can update or delete their contests. The API uses JWT-based user ID for authorization.
+- **Authentication:** Obtain a JWT token for API requests.
+- **Authorization:**  JWT-based user IDs control access.
 
 ### License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

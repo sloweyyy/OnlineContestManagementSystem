@@ -6,5 +6,6 @@ public interface IPaymentService
   Task<Payment> CreatePaymentAsync(Payment payment);
   Task<PaymentLinkInformation> GetPaymentInformationAsync(int orderId);
   Task<PaymentLinkInformation> CancelPaymentAsync(int orderId);
+  Task<Payment> GetPaymentByContestIdAndUserIdAsync(string contestId, string userId);
 
 }
