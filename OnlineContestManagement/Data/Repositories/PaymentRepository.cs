@@ -22,6 +22,11 @@ namespace OnlineContestManagement.Data.Repositories
     {
       return await _payments.Find(p => p.ContestId == contestId && p.UserId == userId).FirstOrDefaultAsync();
     }
+        public async Task<decimal> GetTotalRevenueAsync()
+        {
+            var payments = await _payments.Find(p => p.ContestId != null && p.Status == "Completed").ToListAsync();
+            return payments.Sum(p => p.Price);
+        }
 
-  }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using OnlineContestManagement.Data.Repositories;
+﻿using OnlineContestManagement.Data.Models;
+using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Models;
 using System;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace OnlineContestManagement.Infrastructure.Services
     {
         private readonly IContestRepository _contestRepository;
         private readonly IContestRegistrationRepository _registrationRepository;
-
+        private readonly IPaymentRepository _paymentRepository;
         public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository)
         {
             _contestRepository = contestRepository;
@@ -58,5 +59,33 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
             return ((double)(todayCount - yesterdayCount) / yesterdayCount) * 100;
         }
+        
+        public async Task<int> GetTotalContestsAsync()
+        {
+            return await _contestRepository.GetTotalContestsAsync();
+        }
+
+        public async Task<Dictionary<string, List<User>>> GetContestParticipantsAsync()
+        {
+            return await _registrationRepository.GetContestParticipantsAsync();
+        }
+
+        public async Task<decimal> GetContestRevenueAsync()
+        {
+            return await _paymentRepository.GetTotalRevenueAsync();
+        }
+
+        public async Task<decimal> GetWebsiteRevenueAsync()
+        {
+            var totalRevenue = await GetContestRevenueAsync();
+            return totalRevenue * 0.3m;
+        }
+
+        public async Task<int> GetTotalParticipantsAsync()
+        {
+            return await _registrationRepository.GetTotalParticipantsAsync();
+        }
+
+
     }
 }

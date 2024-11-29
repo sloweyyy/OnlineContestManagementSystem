@@ -13,5 +13,7 @@ namespace OnlineContestManagement.Data.Repositories
     Task<List<Contest>> SearchContestsAsync(ContestSearchFilter filter);
     Task<int> CountContestsByDateAsync(DateTime date);
     Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId);
-  }
+    Task<int> GetTotalContestsAsync();
+
+    }
 }

@@ -9,11 +9,13 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 {
     private readonly IMongoCollection<ContestRegistration> _collection;
     private readonly IMongoCollection<Contest> _contestCollection;
+    private readonly IMongoCollection<User> _userCollection;
 
     public ContestRegistrationRepository(IMongoDatabase database)
     {
         _collection = database.GetCollection<ContestRegistration>("contestRegistrations");
         _contestCollection = database.GetCollection<Contest>("contests");
+        _userCollection = database.GetCollection<User>("users");
     }
 
     public async Task<bool> RegisterUserAsync(ContestRegistration registration)
@@ -94,4 +96,26 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 
         return (int)await _collection.CountDocumentsAsync(filter);
     }
+
+    public async Task<Dictionary<string, List<User>>> GetContestParticipantsAsync()
+    {
+        var contestRegistrations = await _collection.Find(Builders<ContestRegistration>.Filter.Empty).ToListAsync();
+
+        var userIds = contestRegistrations.Select(cr => cr.UserId).Distinct().ToList();
+        var users = await _userCollection.Find(Builders<User>.Filter.In(u => u.Id, userIds)).ToListAsync();
+
+        return contestRegistrations
+            .GroupBy(cr => cr.ContestId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(cr => users.FirstOrDefault(u => u.Id == cr.UserId)).Where(u => u != null).ToList()
+            );
+    }
+
+    public async Task<int> GetTotalParticipantsAsync()
+    {
+        return (int)await _collection.CountDocumentsAsync(Builders<ContestRegistration>.Filter.Empty);
+
+    }
+
 }
