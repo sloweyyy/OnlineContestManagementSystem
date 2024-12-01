@@ -77,9 +77,19 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         public async Task<decimal> GetWebsiteRevenueAsync()
         {
-            var totalRevenue = await GetContestRevenueAsync();
-            return totalRevenue * 0.3m;
+            try
+            {
+                var totalRevenue = await GetContestRevenueAsync();
+                Console.WriteLine($"Total Revenue: {totalRevenue}");
+                return totalRevenue * 0.3m;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetWebsiteRevenueAsync: {ex.Message}");
+                throw;
+            }
         }
+
 
         public async Task<int> GetTotalParticipantsAsync()
         {
