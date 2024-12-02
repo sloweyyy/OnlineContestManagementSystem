@@ -26,6 +26,10 @@ namespace OnlineContestManagement.Controllers
           return NotFound(new { Message = "Payment not found" });
         }
         var paymentLinkInformation = await _paymentService.GetPaymentInformationAsync(payment.OrderId);
+        if (paymentLinkInformation.status != "pending")
+        {
+          await _paymentService.updatePaymentStatus(contestId, userId, paymentLinkInformation.status);
+        }
         return Ok(paymentLinkInformation);
       }
       catch (Exception ex)

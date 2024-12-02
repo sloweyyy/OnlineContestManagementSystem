@@ -54,5 +54,13 @@ namespace OnlineContestManagement.Infrastructure.Services
     {
       return await _paymentRepository.GetPaymentByContestIdAndUserIdAsync(contestId, userId);
     }
+
+    public async Task updatePaymentStatus(string contestId, string userId, string status)
+    {
+      Payment payment = await _paymentRepository.GetPaymentByContestIdAndUserIdAsync(contestId, userId);
+      payment.Status = status.ToLower();
+      payment.UpdatedAt = DateTime.UtcNow;
+      await _paymentRepository.UpdatePaymentAsync(payment);
+    }
   }
 }

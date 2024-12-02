@@ -7,6 +7,7 @@ namespace OnlineContestManagement.Data.Repositories
     Task<Payment> CreatePaymentAsync(Payment payment);
     Task<Payment> GetPaymentByContestIdAndUserIdAsync(string contestId, string userId);
     Task<decimal> GetTotalRevenueAsync();
+    Task UpdatePaymentAsync(Payment payment);
 
-    }
+  }
 }

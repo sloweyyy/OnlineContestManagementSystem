@@ -28,7 +28,7 @@ namespace OnlineContestManagement.Data.Repositories
         {
             try
             {
-                var payments = await _payments.Find(p => p.ContestId != null && p.Status == "Completed").ToListAsync();
+                var payments = await _payments.Find(p => p.ContestId != null && p.Status.ToLower() != "cancelled").ToListAsync();
                 if (payments == null || !payments.Any())
                 {
                     Console.WriteLine("No payments found with ContestId and Status = Completed.");
@@ -44,8 +44,9 @@ namespace OnlineContestManagement.Data.Repositories
                 throw;
             }
         }
-
-
-
+        public async Task UpdatePaymentAsync(Payment payment)
+        {
+            await _payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);
+        }
     }
 }

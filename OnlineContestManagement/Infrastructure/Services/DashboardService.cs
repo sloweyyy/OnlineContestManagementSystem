@@ -11,10 +11,11 @@ namespace OnlineContestManagement.Infrastructure.Services
         private readonly IContestRepository _contestRepository;
         private readonly IContestRegistrationRepository _registrationRepository;
         private readonly IPaymentRepository _paymentRepository;
-        public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository)
+        public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository, IPaymentRepository paymentRepository)
         {
             _contestRepository = contestRepository;
             _registrationRepository = registrationRepository;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<ContestStatisticsModel> GetContestStatisticsAsync()
@@ -59,7 +60,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
             return ((double)(todayCount - yesterdayCount) / yesterdayCount) * 100;
         }
-        
+
         public async Task<int> GetTotalContestsAsync()
         {
             return await _contestRepository.GetTotalContestsAsync();
@@ -80,7 +81,6 @@ namespace OnlineContestManagement.Infrastructure.Services
             try
             {
                 var totalRevenue = await GetContestRevenueAsync();
-                Console.WriteLine($"Total Revenue: {totalRevenue}");
                 return totalRevenue * 0.3m;
             }
             catch (Exception ex)
