@@ -115,5 +115,13 @@ namespace OnlineContestManagement.Data.Repositories
     {
       return await _contests.Find(c => c.CreatorUserId == creatorId).ToListAsync();
     }
+
+    public async Task<int> GetTotalContestsAsync()
+    {
+      return (int)await _contests.CountDocumentsAsync(Builders<Contest>.Filter.Empty);
+    }
+
+
+
   }
 }

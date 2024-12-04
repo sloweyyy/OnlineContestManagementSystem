@@ -1,4 +1,5 @@
-﻿using OnlineContestManagement.Data.Repositories;
+﻿using OnlineContestManagement.Data.Models;
+using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Models;
 using System;
 using System.Threading.Tasks;
@@ -9,11 +10,12 @@ namespace OnlineContestManagement.Infrastructure.Services
     {
         private readonly IContestRepository _contestRepository;
         private readonly IContestRegistrationRepository _registrationRepository;
-
-        public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository)
+        private readonly IPaymentRepository _paymentRepository;
+        public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository, IPaymentRepository paymentRepository)
         {
             _contestRepository = contestRepository;
             _registrationRepository = registrationRepository;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<ContestStatisticsModel> GetContestStatisticsAsync()
@@ -58,5 +60,66 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
             return ((double)(todayCount - yesterdayCount) / yesterdayCount) * 100;
         }
+
+        public async Task<int> GetTotalContestsAsync()
+        {
+            return await _contestRepository.GetTotalContestsAsync();
+        }
+
+        public async Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync()
+        {
+            return await _registrationRepository.GetContestParticipantsAsync();
+        }
+
+        public async Task<decimal> GetContestRevenueAsync()
+        {
+            return await _paymentRepository.GetTotalRevenueAsync();
+        }
+
+        public async Task<decimal> GetWebsiteRevenueAsync()
+        {
+            try
+            {
+                var totalRevenue = await GetContestRevenueAsync();
+                return totalRevenue * 0.3m;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetWebsiteRevenueAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+
+        public async Task<int> GetTotalParticipantsAsync()
+        {
+            return await _registrationRepository.GetTotalParticipantsAsync();
+        }
+
+        public async Task<List<MonthlyRevenueResponse>> GetMonthlyRevenueAsync()
+        {
+            var revenueData = await _paymentRepository.GetMonthlyRevenueAsync();
+            var currentYear = DateTime.UtcNow.Year;
+            var lastYear = currentYear - 1;
+
+            var monthlyRevenue = Enumerable.Range(1, 12).Select(month => new MonthlyRevenueResponse
+            {
+                Month = $"Tháng {month}",
+                LastYear = revenueData
+                    .Where(r => r._id.Year == lastYear && r._id.Month == month)
+                    .Sum(r => r.TotalRevenue),
+                ThisYear = revenueData
+                    .Where(r => r._id.Year == currentYear && r._id.Month == month)
+                    .Sum(r => r.TotalRevenue)
+            }).ToList();
+
+            return monthlyRevenue;
+        }
+
+        public async Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5)
+        {
+            return await _registrationRepository.GetFeaturedContestsAsync(topN);
+        }
+
     }
 }

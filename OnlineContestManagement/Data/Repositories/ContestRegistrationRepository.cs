@@ -9,11 +9,13 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 {
     private readonly IMongoCollection<ContestRegistration> _collection;
     private readonly IMongoCollection<Contest> _contestCollection;
+    private readonly IMongoCollection<User> _userCollection;
 
     public ContestRegistrationRepository(IMongoDatabase database)
     {
         _collection = database.GetCollection<ContestRegistration>("contestRegistrations");
-        _contestCollection = database.GetCollection<Contest>("contests");
+        _contestCollection = database.GetCollection<Contest>("Contests");
+        _userCollection = database.GetCollection<User>("Users");
     }
 
     public async Task<bool> RegisterUserAsync(ContestRegistration registration)
@@ -94,4 +96,77 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 
         return (int)await _collection.CountDocumentsAsync(filter);
     }
+
+    public async Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync()
+    {
+        var contestRegistrations = await _collection.Find(Builders<ContestRegistration>.Filter.Empty).ToListAsync();
+        Console.WriteLine($"Total registrations fetched: {contestRegistrations.Count}");
+
+        return contestRegistrations
+            .GroupBy(cr => cr.ContestId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.ToList()
+            );
+    }
+    public async Task<int> GetTotalParticipantsAsync()
+    {
+        return (int)await _collection.CountDocumentsAsync(Builders<ContestRegistration>.Filter.Empty);
+
+    }
+
+    public async Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5)
+    {
+        var aggregationResults = await _collection
+            .Aggregate()
+            .Group(cr => cr.ContestId, g => new
+            {
+                ContestId = g.Key,
+                ParticipantCount = g.Count()
+            })
+            .SortByDescending(g => g.ParticipantCount)
+            .Limit(topN)
+            .ToListAsync();
+
+        var contestIds = aggregationResults.Select(a => a.ContestId).ToList();
+        var contestsFilter = Builders<Contest>.Filter.In(c => c.Id, contestIds);
+        var contests = await _contestCollection.Find(contestsFilter).ToListAsync();
+
+        var featuredContests = aggregationResults
+            .Join(contests,
+                  ar => ar.ContestId,
+                  c => c.Id,
+                  (ar, c) => new FeaturedContest
+                  {
+                      ContestId = c.Id,
+                      Name = c.Name,
+                      NumberOfParticipants = ar.ParticipantCount,
+                      Status = DetermineContestStatus(c.StartDate, c.EndDate)
+                  })
+            .OrderByDescending(fc => fc.NumberOfParticipants)
+            .ToList();
+
+        for (int i = 0; i < featuredContests.Count; i++)
+        {
+            featuredContests[i].Index = (i + 1).ToString();
+        }
+
+        return featuredContests;
+    }
+    private string DetermineContestStatus(DateTime startDate, DateTime endDate)
+    {
+        var now = DateTime.UtcNow;
+
+        if (now < startDate)
+            return "Sắp diễn ra";
+        else if (now >= startDate && now <= endDate)
+            return "Đang diễn ra";
+        else
+            return "Đã kết thúc";
+    }
+
+
+
+
 }
+

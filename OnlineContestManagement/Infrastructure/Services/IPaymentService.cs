@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Net.payOS.Types;
 using OnlineContestManagement.Data.Models;
 
@@ -7,5 +8,8 @@ public interface IPaymentService
   Task<PaymentLinkInformation> GetPaymentInformationAsync(int orderId);
   Task<PaymentLinkInformation> CancelPaymentAsync(int orderId);
   Task<Payment> GetPaymentByContestIdAndUserIdAsync(string contestId, string userId);
+  Task updatePaymentStatus(string contestId, string userId, string status);
+  Task<IActionResult> UpdateAllPaymentStatusesAsync();
+
 
 }
