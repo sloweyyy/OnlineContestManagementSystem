@@ -13,7 +13,7 @@ COPY . .
 WORKDIR "/src/OnlineContestManagement"
 RUN dotnet build "OnlineContestManagement.csproj" -c Release -o /app/build
 
-# Copy the build output to the runtime image
+# Publish stage
 FROM build AS publish
 RUN dotnet publish "OnlineContestManagement.csproj" -c Release -o /app/publish
 
