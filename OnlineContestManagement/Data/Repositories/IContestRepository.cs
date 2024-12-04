@@ -15,5 +15,6 @@ namespace OnlineContestManagement.Data.Repositories
     Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId);
     Task<int> GetTotalContestsAsync();
 
-    }
+
+  }
 }

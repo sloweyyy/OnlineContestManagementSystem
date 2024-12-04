@@ -10,6 +10,7 @@ namespace OnlineContestManagement.Data.Repositories
     Task UpdatePaymentAsync(Payment payment);
     Task<List<Payment>> GetAllPaymentsAsync();
 
+    Task<List<MonthlyRevenue>> GetMonthlyRevenueAsync();
 
   }
 }

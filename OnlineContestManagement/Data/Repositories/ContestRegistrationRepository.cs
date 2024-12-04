@@ -115,4 +115,58 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
 
     }
 
+    public async Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5)
+    {
+        var aggregationResults = await _collection
+            .Aggregate()
+            .Group(cr => cr.ContestId, g => new
+            {
+                ContestId = g.Key,
+                ParticipantCount = g.Count()
+            })
+            .SortByDescending(g => g.ParticipantCount)
+            .Limit(topN)
+            .ToListAsync();
+
+        var contestIds = aggregationResults.Select(a => a.ContestId).ToList();
+        var contestsFilter = Builders<Contest>.Filter.In(c => c.Id, contestIds);
+        var contests = await _contestCollection.Find(contestsFilter).ToListAsync();
+
+        var featuredContests = aggregationResults
+            .Join(contests,
+                  ar => ar.ContestId,
+                  c => c.Id,
+                  (ar, c) => new FeaturedContest
+                  {
+                      ContestId = c.Id,
+                      Name = c.Name,
+                      NumberOfParticipants = ar.ParticipantCount,
+                      Status = DetermineContestStatus(c.StartDate, c.EndDate)
+                  })
+            .OrderByDescending(fc => fc.NumberOfParticipants)
+            .ToList();
+
+        for (int i = 0; i < featuredContests.Count; i++)
+        {
+            featuredContests[i].Index = (i + 1).ToString();
+        }
+
+        return featuredContests;
+    }
+    private string DetermineContestStatus(DateTime startDate, DateTime endDate)
+    {
+        var now = DateTime.UtcNow;
+
+        if (now < startDate)
+            return "Sắp diễn ra";
+        else if (now >= startDate && now <= endDate)
+            return "Đang diễn ra";
+        else
+            return "Đã kết thúc";
+    }
+
+
+
+
 }
+

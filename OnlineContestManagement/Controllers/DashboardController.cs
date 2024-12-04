@@ -65,6 +65,18 @@ namespace OnlineContestManagement.Controllers
             int totalParticipants = await _dashboardService.GetTotalParticipantsAsync();
             return Ok(totalParticipants);
         }
+        [HttpGet("monthly-revenue")]
+        public async Task<IActionResult> GetMonthlyRevenue()
+        {
+            var monthlyRevenue = await _dashboardService.GetMonthlyRevenueAsync();
+            return Ok(monthlyRevenue);
+        }
 
+        [HttpGet("featured-contests")]
+        public async Task<IActionResult> GetFeaturedContests()
+        {
+            var featuredContests = await _dashboardService.GetFeaturedContestsAsync();
+            return Ok(featuredContests);
+        }
     }
 }

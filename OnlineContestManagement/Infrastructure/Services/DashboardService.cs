@@ -96,6 +96,30 @@ namespace OnlineContestManagement.Infrastructure.Services
             return await _registrationRepository.GetTotalParticipantsAsync();
         }
 
+        public async Task<List<MonthlyRevenueResponse>> GetMonthlyRevenueAsync()
+        {
+            var revenueData = await _paymentRepository.GetMonthlyRevenueAsync();
+            var currentYear = DateTime.UtcNow.Year;
+            var lastYear = currentYear - 1;
+
+            var monthlyRevenue = Enumerable.Range(1, 12).Select(month => new MonthlyRevenueResponse
+            {
+                Month = $"Tháng {month}",
+                LastYear = revenueData
+                    .Where(r => r._id.Year == lastYear && r._id.Month == month)
+                    .Sum(r => r.TotalRevenue),
+                ThisYear = revenueData
+                    .Where(r => r._id.Year == currentYear && r._id.Month == month)
+                    .Sum(r => r.TotalRevenue)
+            }).ToList();
+
+            return monthlyRevenue;
+        }
+
+        public async Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5)
+        {
+            return await _registrationRepository.GetFeaturedContestsAsync(topN);
+        }
 
     }
 }

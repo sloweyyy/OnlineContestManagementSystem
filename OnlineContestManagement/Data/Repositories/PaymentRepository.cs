@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using OnlineContestManagement.Data.Models;
 
@@ -53,6 +54,42 @@ namespace OnlineContestManagement.Data.Repositories
         {
             return await _payments.Find(FilterDefinition<Payment>.Empty).ToListAsync();
         }
+        public async Task<List<MonthlyRevenue>> GetMonthlyRevenueAsync()
+        {
+            var currentYear = DateTime.UtcNow.Year;
+            var lastYear = currentYear - 1;
 
+            var pipeline = new BsonDocument[]
+            {
+        new BsonDocument("$match", new BsonDocument
+            {
+                { "CreatedAt", new BsonDocument("$gte", new DateTime(lastYear, 1, 1)) }
+            }),
+        new BsonDocument("$project", new BsonDocument
+            {
+                { "Year", new BsonDocument("$year", "$CreatedAt") },
+                { "Month", new BsonDocument("$month", "$CreatedAt") },
+                { "Price", 1 }
+            }),
+        new BsonDocument("$group", new BsonDocument
+            {
+                { "_id", new BsonDocument
+                    {
+                        { "Year", "$Year" },
+                        { "Month", "$Month" }
+                    }
+                },
+                { "TotalRevenue", new BsonDocument("$sum", "$Price") }
+            }),
+        new BsonDocument("$sort", new BsonDocument
+            {
+                { "_id.Year", 1 },
+                { "_id.Month", 1 }
+            })
+            };
+
+            var result = await _payments.Aggregate<MonthlyRevenue>(pipeline).ToListAsync();
+            return result;
+        }
     }
 }

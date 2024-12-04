@@ -15,6 +15,9 @@ namespace OnlineContestManagement.Data.Repositories
         Task<int> CountRegistrationsByDateAsync(DateTime date);
         Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync();
         Task<int> GetTotalParticipantsAsync();
+        Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5);
+
+
 
     }
 

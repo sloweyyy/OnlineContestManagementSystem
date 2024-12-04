@@ -13,6 +13,8 @@ namespace OnlineContestManagement.Infrastructure.Services
         Task<decimal> GetContestRevenueAsync();
         Task<decimal> GetWebsiteRevenueAsync();
         Task<int> GetTotalParticipantsAsync();
+        Task<List<MonthlyRevenueResponse>> GetMonthlyRevenueAsync();
+        Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5);
 
     }
 }
