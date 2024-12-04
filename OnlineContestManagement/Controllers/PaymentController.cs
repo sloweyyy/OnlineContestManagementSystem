@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Net.payOS.Types;
 using System.Threading.Tasks;
@@ -37,5 +38,13 @@ namespace OnlineContestManagement.Controllers
         return BadRequest(new { Message = "Error retrieving payment information", Error = ex.Message });
       }
     }
+
+    [HttpPut("update-all-payment-statuses")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateAllPaymentStatuses()
+    {
+      return await _paymentService.UpdateAllPaymentStatusesAsync();
+    }
+
   }
 }

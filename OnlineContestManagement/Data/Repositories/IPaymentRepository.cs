@@ -8,6 +8,8 @@ namespace OnlineContestManagement.Data.Repositories
     Task<Payment> GetPaymentByContestIdAndUserIdAsync(string contestId, string userId);
     Task<decimal> GetTotalRevenueAsync();
     Task UpdatePaymentAsync(Payment payment);
+    Task<List<Payment>> GetAllPaymentsAsync();
+
 
   }
 }

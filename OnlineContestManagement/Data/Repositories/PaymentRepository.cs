@@ -48,5 +48,11 @@ namespace OnlineContestManagement.Data.Repositories
         {
             await _payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);
         }
+
+        public async Task<List<Payment>> GetAllPaymentsAsync()
+        {
+            return await _payments.Find(FilterDefinition<Payment>.Empty).ToListAsync();
+        }
+
     }
 }

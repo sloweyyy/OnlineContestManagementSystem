@@ -14,8 +14,8 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
     public ContestRegistrationRepository(IMongoDatabase database)
     {
         _collection = database.GetCollection<ContestRegistration>("contestRegistrations");
-        _contestCollection = database.GetCollection<Contest>("contests");
-        _userCollection = database.GetCollection<User>("users");
+        _contestCollection = database.GetCollection<Contest>("Contests");
+        _userCollection = database.GetCollection<User>("Users");
     }
 
     public async Task<bool> RegisterUserAsync(ContestRegistration registration)
@@ -97,21 +97,18 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
         return (int)await _collection.CountDocumentsAsync(filter);
     }
 
-    public async Task<Dictionary<string, List<User>>> GetContestParticipantsAsync()
+    public async Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync()
     {
         var contestRegistrations = await _collection.Find(Builders<ContestRegistration>.Filter.Empty).ToListAsync();
-
-        var userIds = contestRegistrations.Select(cr => cr.UserId).Distinct().ToList();
-        var users = await _userCollection.Find(Builders<User>.Filter.In(u => u.Id, userIds)).ToListAsync();
+        Console.WriteLine($"Total registrations fetched: {contestRegistrations.Count}");
 
         return contestRegistrations
             .GroupBy(cr => cr.ContestId)
             .ToDictionary(
                 g => g.Key,
-                g => g.Select(cr => users.FirstOrDefault(u => u.Id == cr.UserId)).Where(u => u != null).ToList()
+                g => g.ToList()
             );
     }
-
     public async Task<int> GetTotalParticipantsAsync()
     {
         return (int)await _collection.CountDocumentsAsync(Builders<ContestRegistration>.Filter.Empty);

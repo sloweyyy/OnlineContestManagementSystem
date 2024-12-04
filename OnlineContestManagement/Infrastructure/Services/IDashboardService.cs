@@ -9,7 +9,7 @@ namespace OnlineContestManagement.Infrastructure.Services
         Task<ContestStatisticsModel> GetContestStatisticsAsync();
         Task<RegistrationStatisticsModel> GetRegistrationStatisticsAsync();
         Task<int> GetTotalContestsAsync();
-        Task<Dictionary<string, List<User>>> GetContestParticipantsAsync();
+        Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync();
         Task<decimal> GetContestRevenueAsync();
         Task<decimal> GetWebsiteRevenueAsync();
         Task<int> GetTotalParticipantsAsync();

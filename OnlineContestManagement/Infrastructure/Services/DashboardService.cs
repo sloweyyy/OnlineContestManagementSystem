@@ -66,7 +66,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             return await _contestRepository.GetTotalContestsAsync();
         }
 
-        public async Task<Dictionary<string, List<User>>> GetContestParticipantsAsync()
+        public async Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync()
         {
             return await _registrationRepository.GetContestParticipantsAsync();
         }

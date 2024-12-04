@@ -13,7 +13,7 @@ namespace OnlineContestManagement.Data.Repositories
         Task<List<Contest>> GetContestsByUserIdAsync(string userId);
         Task<ContestRegistration> GetRegistrationByUserIdAndContestIdAsync(string contestId, string userId);
         Task<int> CountRegistrationsByDateAsync(DateTime date);
-        Task<Dictionary<string, List<User>>> GetContestParticipantsAsync();
+        Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync();
         Task<int> GetTotalParticipantsAsync();
 
     }
