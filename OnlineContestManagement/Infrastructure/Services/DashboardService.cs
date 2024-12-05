@@ -11,14 +11,17 @@ namespace OnlineContestManagement.Infrastructure.Services
         private readonly IContestRepository _contestRepository;
         private readonly IContestRegistrationRepository _registrationRepository;
         private readonly IPaymentRepository _paymentRepository;
-        public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository, IPaymentRepository paymentRepository)
+        private readonly ILogger<DashboardService> _logger;
+
+        public DashboardService(IContestRepository contestRepository, IContestRegistrationRepository registrationRepository, IPaymentRepository paymentRepository, ILogger<DashboardService> logger)
         {
             _contestRepository = contestRepository;
             _registrationRepository = registrationRepository;
             _paymentRepository = paymentRepository;
+            _logger = logger;
         }
 
-        public async Task<ContestStatisticsModel> GetContestStatisticsAsync()
+        public async Task<ContestStatisticsResponse> GetContestStatisticsAsync()
         {
             var today = DateTime.UtcNow.Date;
             var yesterday = today.AddDays(-1);
@@ -27,7 +30,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             var contestsYesterday = await _contestRepository.CountContestsByDateAsync(yesterday);
             var contestsGrowth = CalculateGrowthPercentage(contestsToday, contestsYesterday);
 
-            return new ContestStatisticsModel
+            return new ContestStatisticsResponse
             {
                 ContestsToday = contestsToday,
                 ContestsYesterday = contestsYesterday,
@@ -35,7 +38,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             };
         }
 
-        public async Task<RegistrationStatisticsModel> GetRegistrationStatisticsAsync()
+        public async Task<RegistrationStatisticsResponse> GetRegistrationStatisticsAsync()
         {
             var today = DateTime.UtcNow.Date;
             var yesterday = today.AddDays(-1);
@@ -44,7 +47,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             var registrationsYesterday = await _registrationRepository.CountRegistrationsByDateAsync(yesterday);
             var registrationsGrowth = CalculateGrowthPercentage(registrationsToday, registrationsYesterday);
 
-            return new RegistrationStatisticsModel
+            return new RegistrationStatisticsResponse
             {
                 RegistrationsToday = registrationsToday,
                 RegistrationsYesterday = registrationsYesterday,
@@ -76,18 +79,30 @@ namespace OnlineContestManagement.Infrastructure.Services
             return await _paymentRepository.GetTotalRevenueAsync();
         }
 
-        public async Task<decimal> GetWebsiteRevenueAsync()
+        public async Task<RevenueStatisticsResponse> GetWebsiteRevenueAsync()
         {
-            try
+            var today = DateTime.UtcNow.Date;
+            var yesterday = today.AddDays(-1);
+
+            var todayRevenue = await _paymentRepository.GetTotalRevenueByDateAsync(today);
+            var yesterdayRevenue = await _paymentRepository.GetTotalRevenueByDateAsync(yesterday);
+            var growthPercentage = CalculateGrowthPercentage(todayRevenue, yesterdayRevenue);
+
+            return new RevenueStatisticsResponse
             {
-                var totalRevenue = await GetContestRevenueAsync();
-                return totalRevenue * 0.3m;
-            }
-            catch (Exception ex)
+                TodayRevenue = todayRevenue * 0.3m,
+                YesterdayRevenue = yesterdayRevenue * 0.3m,
+                GrowthPercentage = growthPercentage
+            };
+        }
+
+        private double CalculateGrowthPercentage(decimal todayCount, decimal yesterdayCount)
+        {
+            if (yesterdayCount == 0)
             {
-                Console.WriteLine($"Error in GetWebsiteRevenueAsync: {ex.Message}");
-                throw;
+                return todayCount > 0 ? 100 : 0;
             }
+            return ((double)(todayCount - yesterdayCount) / (double)yesterdayCount) * 100;
         }
 
 
@@ -121,5 +136,24 @@ namespace OnlineContestManagement.Infrastructure.Services
             return await _registrationRepository.GetFeaturedContestsAsync(topN);
         }
 
+        public async Task<List<QuarterlyContestDataResponse>> GetQuarterlyContestDataAsync()
+        {
+            var statusCounts = await _contestRepository.GetQuarterlyContestCountsAsync();
+
+            var data = statusCounts
+                .GroupBy(q => new { q.Year, q.Quarter })
+                .Select(g => new QuarterlyContestDataResponse
+                {
+                    Quarter = $"{g.Key.Year} {g.Key.Quarter}",
+                    OnBoarding = g.Where(x => x.Status == "Đang diễn ra").Sum(x => x.ContestCount),
+                    ComingSoon = g.Where(x => x.Status == "Sắp diễn ra").Sum(x => x.ContestCount),
+                    Ended = g.Where(x => x.Status == "Đã kết thúc").Sum(x => x.ContestCount),
+                })
+                .ToList();
+
+            _logger.LogInformation("Quarterly contest data transformed successfully.");
+
+            return data;
+        }
     }
 }

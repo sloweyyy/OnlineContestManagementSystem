@@ -45,6 +45,18 @@ namespace OnlineContestManagement.Data.Repositories
                 throw;
             }
         }
+
+        public async Task<decimal> GetTotalRevenueByDateAsync(DateTime date)
+        {
+            var filter = Builders<Payment>.Filter.And(
+                Builders<Payment>.Filter.Gte(p => p.CreatedAt, date.Date),
+                Builders<Payment>.Filter.Lt(p => p.CreatedAt, date.Date.AddDays(1))
+            );
+
+            var payments = await _payments.Find(filter).ToListAsync();
+            return payments.Sum(p => p.Price);
+        }
+
         public async Task UpdatePaymentAsync(Payment payment)
         {
             await _payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);

@@ -11,6 +11,8 @@ namespace OnlineContestManagement.Data.Repositories
     Task<List<Payment>> GetAllPaymentsAsync();
 
     Task<List<MonthlyRevenue>> GetMonthlyRevenueAsync();
+    Task<decimal> GetTotalRevenueByDateAsync(DateTime date);
+
 
   }
 }
