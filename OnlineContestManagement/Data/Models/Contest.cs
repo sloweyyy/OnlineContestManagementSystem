@@ -24,5 +24,17 @@ namespace OnlineContestManagement.Data.Models
     public decimal EntryFee { get; set; }
     public string Status { get; set; } = "pending";
 
+    public string GetContestStatus(DateTime startDate, DateTime endDate)
+    {
+      var now = DateTime.UtcNow;
+
+      if (now < startDate)
+        return "Sắp diễn ra";
+      else if (now >= startDate && now <= endDate)
+        return "Đang diễn ra";
+      else
+        return "Đã kết thúc";
+    }
+
   }
 }

@@ -1,6 +1,6 @@
 ﻿namespace OnlineContestManagement.Models
 {
-    public class RegistrationStatisticsModel
+    public class RegistrationStatisticsResponse
     {
         public int RegistrationsToday { get; set; }
         public int RegistrationsYesterday { get; set; }

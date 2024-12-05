@@ -56,7 +56,7 @@ namespace OnlineContestManagement.Controllers
         public async Task<IActionResult> GetWebsiteRevenue()
         {
             var websiteRevenue = await _dashboardService.GetWebsiteRevenueAsync();
-            return Ok(new { WebsiteRevenue = websiteRevenue });
+            return Ok(websiteRevenue);
         }
 
         [HttpGet("total-participants")]
@@ -78,5 +78,12 @@ namespace OnlineContestManagement.Controllers
             var featuredContests = await _dashboardService.GetFeaturedContestsAsync();
             return Ok(featuredContests);
         }
+        [HttpGet("quarterly-contest-counts")]
+        public async Task<IActionResult> GetQuarterlyContestCounts()
+        {
+            var quarterlyCounts = await _dashboardService.GetQuarterlyContestDataAsync();
+            return Ok(quarterlyCounts);
+        }
+
     }
 }

@@ -6,15 +6,15 @@ namespace OnlineContestManagement.Infrastructure.Services
 {
     public interface IDashboardService
     {
-        Task<ContestStatisticsModel> GetContestStatisticsAsync();
-        Task<RegistrationStatisticsModel> GetRegistrationStatisticsAsync();
+        Task<ContestStatisticsResponse> GetContestStatisticsAsync();
+        Task<RegistrationStatisticsResponse> GetRegistrationStatisticsAsync();
         Task<int> GetTotalContestsAsync();
         Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync();
         Task<decimal> GetContestRevenueAsync();
-        Task<decimal> GetWebsiteRevenueAsync();
+        Task<RevenueStatisticsResponse> GetWebsiteRevenueAsync();
         Task<int> GetTotalParticipantsAsync();
         Task<List<MonthlyRevenueResponse>> GetMonthlyRevenueAsync();
         Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5);
-
+        Task<List<QuarterlyContestDataResponse>> GetQuarterlyContestDataAsync();
     }
 }

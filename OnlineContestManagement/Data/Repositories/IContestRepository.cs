@@ -14,7 +14,6 @@ namespace OnlineContestManagement.Data.Repositories
     Task<int> CountContestsByDateAsync(DateTime date);
     Task<List<Contest>> GetContestsByCreatorIdAsync(string creatorId);
     Task<int> GetTotalContestsAsync();
-
-
+    Task<List<QuarterlyContestStatusCountResponse>> GetQuarterlyContestCountsAsync();
   }
 }
