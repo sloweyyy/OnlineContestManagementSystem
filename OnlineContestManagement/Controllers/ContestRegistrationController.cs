@@ -53,14 +53,13 @@ namespace OnlineContestManagement.Controllers
             return BadRequest(new { Message = result.Error });
         }
         [HttpPost("withdraw")]
-        public async Task<IActionResult> WithdrawFromContest(string contestId, [FromBody] WithdrawFromContestModel withdrawModel)
+        public async Task<IActionResult> WithdrawFromContest([FromBody] WithdrawFromContestModel withdrawModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            withdrawModel.ContestId = contestId;
 
             var result = await _registrationService.WithdrawUserFromContestAsync(withdrawModel);
             if (result)
