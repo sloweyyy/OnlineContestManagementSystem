@@ -215,5 +215,40 @@ namespace OnlineContestManagement.Data.Repositories
         new QuarterlyContestStatusCountResponse { Year = currentYear, Quarter = "Q4", Status = "Không có cuộc thi", ContestCount = 0 }
     };
     }
+
+    public async Task<int> GetContestCountByStatusAsync(string status)
+    {
+      var now = DateTime.UtcNow;
+      FilterDefinition<Contest> filter = Builders<Contest>.Filter.Eq(c => c.Status, "approved");
+
+      switch (status)
+      {
+        case "Sắp diễn ra":
+          filter &= Builders<Contest>.Filter.Gt(c => c.StartDate, now);
+          break;
+        case "Đang diễn ra":
+          filter &= Builders<Contest>.Filter.Lte(c => c.StartDate, now) &
+                    Builders<Contest>.Filter.Gte(c => c.EndDate, now);
+          break;
+        case "Đã kết thúc":
+          filter &= Builders<Contest>.Filter.Lt(c => c.EndDate, now);
+          break;
+        default:
+          _logger.LogWarning($"Unknown status '{status}' provided.");
+          return 0;
+      }
+
+      try
+      {
+        int count = (int)await _contests.CountDocumentsAsync(filter);
+        _logger.LogInformation($"Count for status '{status}': {count}");
+        return count;
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, $"Error occurred while counting contests with status '{status}'.");
+        return 0;
+      }
+    }
   }
 }

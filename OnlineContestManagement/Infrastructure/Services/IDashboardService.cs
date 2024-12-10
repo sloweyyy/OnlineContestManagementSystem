@@ -16,5 +16,8 @@ namespace OnlineContestManagement.Infrastructure.Services
         Task<List<MonthlyRevenueResponse>> GetMonthlyRevenueAsync();
         Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5);
         Task<List<QuarterlyContestDataResponse>> GetQuarterlyContestDataAsync();
+        Task<int> GetComingSoonContestCountAsync();
+        Task<int> GetOnBoardingContestCountAsync();
+
     }
 }
