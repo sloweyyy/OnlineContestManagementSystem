@@ -155,5 +155,16 @@ namespace OnlineContestManagement.Infrastructure.Services
 
             return data;
         }
+
+        public async Task<int> GetComingSoonContestCountAsync()
+        {
+            return await _contestRepository.GetContestCountByStatusAsync("Sắp diễn ra");
+        }
+
+        public async Task<int> GetOnBoardingContestCountAsync()
+        {
+            return await _contestRepository.GetContestCountByStatusAsync("Đang diễn ra");
+        }
+
     }
 }
