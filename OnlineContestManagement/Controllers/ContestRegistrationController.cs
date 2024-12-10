@@ -60,7 +60,6 @@ namespace OnlineContestManagement.Controllers
                 return BadRequest(ModelState);
             }
 
-
             var result = await _registrationService.WithdrawUserFromContestAsync(withdrawModel);
             if (result)
             {
