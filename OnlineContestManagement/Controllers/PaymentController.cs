@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Net.payOS.Types;
+using OnlineContestManagement.Infrastructure.Services;
 using System.Threading.Tasks;
 
 namespace OnlineContestManagement.Controllers
@@ -10,11 +11,14 @@ namespace OnlineContestManagement.Controllers
   public class PaymentController : ControllerBase
   {
     private readonly IPaymentService _paymentService;
+    private readonly IContestRegistrationService _contestRegistrationService;
 
-    public PaymentController(IPaymentService paymentService)
+    public PaymentController(IPaymentService paymentService, IContestRegistrationService contestRegistrationService)
     {
       _paymentService = paymentService;
+      _contestRegistrationService = contestRegistrationService;
     }
+
 
     [HttpGet("get-payment-status/{contestId}/{userId}")]
     public async Task<ActionResult<PaymentLinkInformation>> GetPaymentLinkInformation(string contestId, string userId)
@@ -30,6 +34,8 @@ namespace OnlineContestManagement.Controllers
         if (paymentLinkInformation.status != "pending")
         {
           await _paymentService.updatePaymentStatus(contestId, userId, paymentLinkInformation.status);
+          await _contestRegistrationService.UpdateRegistrationStatusAsync(contestId, userId, paymentLinkInformation.status);
+
         }
         return Ok(paymentLinkInformation);
       }

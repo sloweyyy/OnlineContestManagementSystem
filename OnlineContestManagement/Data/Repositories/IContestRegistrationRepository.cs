@@ -16,6 +16,8 @@ namespace OnlineContestManagement.Data.Repositories
         Task<Dictionary<string, List<ContestRegistration>>> GetContestParticipantsAsync();
         Task<int> GetTotalParticipantsAsync();
         Task<List<FeaturedContest>> GetFeaturedContestsAsync(int topN = 5);
+        Task UpdateRegistrationAsync(ContestRegistration registration);
+
 
 
 
