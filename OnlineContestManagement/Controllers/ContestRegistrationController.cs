@@ -104,5 +104,25 @@ namespace OnlineContestManagement.Controllers
             }
             return Ok(registrations);
         }
+
+        [HttpGet("{contestId}/registrations/excel")]
+        public async Task<IActionResult> DownloadRegistrationsExcel(string contestId)
+        {
+            try
+            {
+                var excelData = await _registrationService.GenerateContestRegistrationsExcelAsync(contestId);
+                var fileName = $"Contest_{contestId}_Registrations.xlsx";
+                return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = "Error generating Excel file.", Error = ex.Message });
+            }
+        }
+
     }
 }
