@@ -12,6 +12,7 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         Task<List<ContestRegistration>> GetRegistrationsByContestIdAsync(string contestId);
         Task UpdateRegistrationStatusAsync(string contestId, string userId, string status);
+        Task<byte[]> GenerateContestRegistrationsExcelAsync(string contestId);
 
     }
 
