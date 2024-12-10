@@ -8,6 +8,8 @@ using MongoDB.Driver;
 using OnlineContestManagement.Infrastructure;
 using System.Security.Claims;
 using Net.payOS;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace OnlineContestManagement
 {
@@ -18,14 +20,21 @@ namespace OnlineContestManagement
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration
+        {
+            get;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "OnlineContestManagement API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "OnlineContestManagement API",
+                    Version = "v1"
+                });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -34,15 +43,12 @@ namespace OnlineContestManagement
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
+                        new OpenApiSecurityScheme {
+                            Reference = new OpenApiReference {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
+                                    Id = "Bearer"
                             }
                         },
                         new string[] {}
@@ -52,9 +58,6 @@ namespace OnlineContestManagement
 
             // Add HttpContextAccessor
             services.AddHttpContextAccessor();
-
-            // Configure SmtpClient
-            // Configure SmtpClient from environment variables
 
             // Configure MongoDB
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbSettings"));
@@ -84,7 +87,6 @@ namespace OnlineContestManagement
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IPaymentService, PaymentService>();
 
-
             // Configure JWT Authentication
             var jwtSettings = new JwtSettings
             {
@@ -103,39 +105,80 @@ namespace OnlineContestManagement
                 options.ExpiryMinutes = jwtSettings.ExpiryMinutes;
                 options.RefreshTokenExpiryDays = jwtSettings.RefreshTokenExpiryDays;
             });
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+                options.OnAppendCookie = cookieContext =>
+                {
+                    if (cookieContext.CookieOptions.SameSite == SameSiteMode.None)
+                    {
+                        cookieContext.CookieOptions.Secure = true;
+                    }
+                };
+                options.OnDeleteCookie = cookieContext =>
+                {
+                    if (cookieContext.CookieOptions.SameSite == SameSiteMode.None)
+                    {
+                        cookieContext.CookieOptions.Secure = true;
+                    }
+                };
+            });
 
             // Add JWT authentication
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
             })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.Issuer,
-                    ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
-                };
-            });
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.LoginPath = "/api/Auth/google-login";
+                    options.LogoutPath = "/api/Auth/revoke-token";
+
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = Configuration["JWT_ISSUER"],
+                        ValidAudience = Configuration["JWT_AUDIENCE"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT_SECRET_KEY"]))
+                    };
+                })
+                .AddGoogle(options =>
+                {
+                    options.ClientId = Configuration["GOOGLE_CLIENT_ID"];
+                    options.ClientSecret = Configuration["GOOGLE_CLIENT_SECRET"];
+
+                    options.CallbackPath = "/api/Auth/google-response";
+
+                    // Map external claims to internal claims
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+
+                    // Optional: Configure other options
+                    options.SaveTokens = true;
+
+                });
 
             services.AddSingleton(sp =>
             {
                 var smtpSettings = new SmtpSettings
                 {
-                    Host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? throw new Exception("SMTP_HOST environment variable not set"),
-                    Port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? throw new Exception("SMTP_PORT environment variable not set")),
-                    Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? throw new Exception("SMTP_USERNAME environment variable not set"),
-                    Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new Exception("SMTP_PASSWORD environment variable not set"),
-                    UseSSL = bool.Parse(Environment.GetEnvironmentVariable("SMTP_USE_SSL") ?? throw new Exception("SMTP_USE_SSL environment variable not set")),
-                    UseTLS = bool.Parse(Environment.GetEnvironmentVariable("SMTP_USE_TLS") ?? "false"),
-                    FromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? throw new Exception("SMTP_FROM_NAME environment variable not set")
+                    Host = Configuration["SMTP_HOST"],
+                    Port = int.Parse(Configuration["SMTP_PORT"]),
+                    Username = Configuration["SMTP_USERNAME"],
+                    Password = Configuration["SMTP_PASSWORD"],
+                    UseSSL = bool.Parse(Configuration["SMTP_USE_SSL"]),
+                    UseTLS = bool.Parse(Configuration.GetValue("SMTP_USE_TLS", "false")),
+                    FromName = Configuration["SMTP_FROM_NAME"]
                 };
                 return smtpSettings;
             });
@@ -144,13 +187,12 @@ namespace OnlineContestManagement
             {
                 var payOS = new PayOSSettings
                 {
-                    ClientId = Environment.GetEnvironmentVariable("PAYOS_CLIENT_ID") ?? throw new Exception("PAYOS_CLIENT_ID environment variable not set"),
-                    ApiKey = Environment.GetEnvironmentVariable("PAYOS_API_KEY") ?? throw new Exception("PAYOS_API_KEY environment variable not set"),
-                    ChecksumKey = Environment.GetEnvironmentVariable("PAYOS_CHECKSUM_KEY") ?? throw new Exception("PAYOS_CHECKSUM_KEY environment variable not set")
+                    ClientId = Configuration["PAYOS_CLIENT_ID"],
+                    ApiKey = Configuration["PAYOS_API_KEY"],
+                    ChecksumKey = Configuration["PAYOS_CHECKSUM_KEY"]
                 };
                 return payOS;
             });
-
 
             // Add CORS policy
             services.AddCors(options =>
@@ -158,8 +200,8 @@ namespace OnlineContestManagement
                 options.AddPolicy("AllowAll", builder =>
                 {
                     builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
                 });
             });
         }
@@ -176,6 +218,7 @@ namespace OnlineContestManagement
                     c.RoutePrefix = string.Empty;
                 });
             }
+            app.UseCookiePolicy();
 
             app.UseHttpsRedirection();
 
