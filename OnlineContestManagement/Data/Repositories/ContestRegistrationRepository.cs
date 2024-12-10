@@ -165,6 +165,13 @@ public class ContestRegistrationRepository : IContestRegistrationRepository
             return "Đã kết thúc";
     }
 
+    public async Task UpdateRegistrationAsync(ContestRegistration registration)
+    {
+        var filter = Builders<ContestRegistration>.Filter.Eq(r => r.Id, registration.Id);
+        await _collection.ReplaceOneAsync(filter, registration);
+    }
+
+
 
 
 

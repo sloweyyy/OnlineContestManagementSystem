@@ -6,7 +6,6 @@ namespace OnlineContestManagement.Models
 {
     public class RegisterForContestModel
     {
-        [Required]
         public string UserId { get; set; }
 
         [Required]

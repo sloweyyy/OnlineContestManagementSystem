@@ -3,6 +3,7 @@ using OnlineContestManagement.Data.Repositories;
 using OnlineContestManagement.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace OnlineContestManagement.Infrastructure.Services
@@ -220,5 +221,19 @@ namespace OnlineContestManagement.Infrastructure.Services
         {
             return await _registrationRepository.GetRegistrationsByContestIdAsync(contestId);
         }
+
+        public async Task UpdateRegistrationStatusAsync(string contestId, string userId, string status)
+        {
+            var registration = await _registrationRepository.GetRegistrationByUserIdAndContestIdAsync(contestId, userId);
+            if (registration != null)
+            {
+                if (status.Equals("withdrawn", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                registration.Status = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(status.ToLowerInvariant());
+                await _registrationRepository.UpdateRegistrationAsync(registration);
+            }
+        }
+
     }
 }
