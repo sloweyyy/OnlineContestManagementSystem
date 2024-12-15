@@ -16,6 +16,7 @@ RUN dotnet build "OnlineContestManagement.csproj" -c Release -o /app/build
 # Publish stage
 FROM build AS publish
 RUN dotnet publish "OnlineContestManagement.csproj" -c Release -o /app/publish
+COPY Templates /app/publish/Templates
 
 # Final runtime image
 FROM base AS final

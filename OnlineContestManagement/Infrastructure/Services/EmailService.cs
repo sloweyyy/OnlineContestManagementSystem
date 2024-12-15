@@ -15,7 +15,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             Console.WriteLine($"SMTP FromName: {_smtpSettings.FromName}");
         }
 
-        public async Task SendRegistrationConfirmation(string to, string contestId)
+        public async Task SendRegistrationConfirmation(string to, string contestName)
         {
             if (string.IsNullOrWhiteSpace(_smtpSettings.Username))
             {
@@ -26,7 +26,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             var htmlTemplate = File.ReadAllText("Templates/RegistrationConfirmationTemplate.html");
             var emailBody = htmlTemplate
                 .Replace("{{recipientName}}", "Contestant")
-                .Replace("{{contestId}}", contestId);
+                .Replace("{{contestName}}", contestName);
 
             var message = new MailMessage
             {
@@ -45,11 +45,11 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
         }
 
-        public async Task SendWithdrawalConfirmation(string to, string contestId)
+        public async Task SendWithdrawalConfirmation(string to, string contestName)
         {
             var htmlTemplate = File.ReadAllText("Templates/WithdrawalConfirmationTemplate.html");
             var emailBody = htmlTemplate
-            .Replace("{{contestId}}", contestId)
+            .Replace("{{contestName}}", contestName)
             .Replace("{{recipientName}}", "Contestant");
             Console.WriteLine("Sending withdrawal confirmation email to " + to);
             var message = new MailMessage
