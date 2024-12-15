@@ -16,18 +16,18 @@ namespace OnlineContestManagement.Infrastructure.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly JwtSettings _jwtSettings;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly ITokenRepository _tokenRepository;
 
         public AuthService(
             IUserRepository userRepository,
             IPasswordHasher<User> passwordHasher,
             IOptions<JwtSettings> jwtSettings,
-            IRefreshTokenRepository refreshTokenRepository)
+            ITokenRepository tokenRepository)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
             _jwtSettings = jwtSettings?.Value ?? throw new ArgumentNullException(nameof(jwtSettings));
-            _refreshTokenRepository = refreshTokenRepository ?? throw new ArgumentNullException(nameof(refreshTokenRepository));
+            _tokenRepository = tokenRepository ?? throw new ArgumentNullException(nameof(tokenRepository));
         }
 
         public async Task<IdentityResult> RegisterUserAsync(RegisterModel model)
@@ -108,7 +108,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             if (string.IsNullOrEmpty(refreshToken))
                 throw new ArgumentNullException(nameof(refreshToken));
 
-            var existingRefreshToken = await _refreshTokenRepository.GetRefreshTokenByTokenAsync(refreshToken);
+            var existingRefreshToken = await _tokenRepository.GetTokenByValueAsync(refreshToken, TokenType.RefreshToken);
             if (existingRefreshToken == null)
             {
                 throw new AuthenticationException("Invalid refresh token");
@@ -133,7 +133,7 @@ namespace OnlineContestManagement.Infrastructure.Services
             var newAccessToken = await GenerateJwtTokenAsync(user);
             var newRefreshToken = GenerateRefreshToken();
             await SaveRefreshTokenAsync(newRefreshToken, user);
-            await _refreshTokenRepository.RevokeRefreshTokenAsync(refreshToken);
+            await RevokeRefreshTokenAsync(refreshToken);
 
             return new AuthResponse
             {
@@ -148,13 +148,18 @@ namespace OnlineContestManagement.Infrastructure.Services
             if (string.IsNullOrEmpty(refreshToken))
                 throw new ArgumentNullException(nameof(refreshToken));
 
-            var existingRefreshToken = await _refreshTokenRepository.GetRefreshTokenByTokenAsync(refreshToken);
+            var existingRefreshToken = await _tokenRepository.GetTokenByValueAsync(refreshToken, TokenType.RefreshToken);
             if (existingRefreshToken == null)
             {
                 throw new AuthenticationException("Invalid refresh token");
             }
 
-            await _refreshTokenRepository.RevokeRefreshTokenAsync(refreshToken);
+            if (existingRefreshToken.IsRevoked)
+            {
+                throw new AuthenticationException("Refresh token is already revoked");
+            }
+
+            await _tokenRepository.RevokeTokenAsync(refreshToken, TokenType.RefreshToken);
         }
 
         private async Task<string> GenerateJwtTokenAsync(User user)
@@ -190,15 +195,15 @@ namespace OnlineContestManagement.Infrastructure.Services
 
         private async Task SaveRefreshTokenAsync(string refreshToken, User user)
         {
-            var refreshTokenEntity = new RefreshToken
+            var token = new Token
             {
-                Token = refreshToken,
+                TokenValue = refreshToken,
                 UserId = user.Id,
-                ExpiryDate = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays),
-                IsRevoked = false
+                ExpiryDate = DateTime.UtcNow.AddMinutes(_jwtSettings.RefreshTokenExpiryDays),
+                Type = TokenType.RefreshToken
             };
 
-            await _refreshTokenRepository.CreateRefreshTokenAsync(refreshTokenEntity);
+            await _tokenRepository.CreateTokenAsync(token);
         }
 
         private bool IsValidEmail(string email)
@@ -212,6 +217,58 @@ namespace OnlineContestManagement.Infrastructure.Services
             {
                 return false;
             }
+        }
+
+        public async Task<string> GenerateResetPasswordTokenAsync(string email)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found");
+            }
+
+            var resetToken = GenerateResetPasswordToken();
+            await SaveResetPasswordTokenAsync(resetToken, user);
+            return resetToken;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string resetToken, string newPassword)
+        {
+            var existingToken = await _tokenRepository.GetTokenByValueAsync(resetToken, TokenType.ResetPassword);
+            if (existingToken == null || existingToken.IsRevoked || existingToken.ExpiryDate < DateTime.UtcNow)
+            {
+                throw new ArgumentException("Invalid or expired reset token");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(existingToken.UserId);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found");
+            }
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
+            await _userRepository.UpdateUserAsync(user);
+            await _tokenRepository.RevokeTokenAsync(resetToken, TokenType.ResetPassword);
+
+            return true;
+        }
+
+        private string GenerateResetPasswordToken()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        private async Task SaveResetPasswordTokenAsync(string resetToken, User user)
+        {
+            var token = new Token
+            {
+                TokenValue = resetToken,
+                UserId = user.Id,
+                ExpiryDate = DateTime.UtcNow.AddHours(1),
+                Type = TokenType.ResetPassword
+            };
+
+            await _tokenRepository.CreateTokenAsync(token);
         }
     }
 }

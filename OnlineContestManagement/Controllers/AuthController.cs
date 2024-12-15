@@ -13,11 +13,13 @@ namespace OnlineContestManagement.Controllers
     {
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IUserService userService, IAuthService authService)
+        public AuthController(IUserService userService, IAuthService authService, IEmailService emailService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         }
 
         [HttpPost("register")]
@@ -101,5 +103,49 @@ namespace OnlineContestManagement.Controllers
                 return BadRequest(new { Message = "Token revocation failed", Error = ex.Message });
             }
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> GenerateResetPasswordToken([FromBody] ResetPasswordRequest model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var resetToken = await _authService.GenerateResetPasswordTokenAsync(model.Email);
+                await _emailService.SendResetPasswordEmail(model.Email, resetToken);
+                return Ok(new { Message = "Reset password token generated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = "Failed to generate reset password token", Error = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _authService.ResetPasswordAsync(model.ResetToken, model.NewPassword);
+                if (result)
+                {
+                    return Ok(new { Message = "Password reset successfully" });
+                }
+                return BadRequest(new { Message = "Password reset failed" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = "Password reset failed", Error = ex.Message });
+            }
+        }
+
     }
 }
