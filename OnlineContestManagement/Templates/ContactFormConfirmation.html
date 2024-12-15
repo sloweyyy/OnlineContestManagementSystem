@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Contact Form Confirmation</title>
+  <style media="all" type="text/css">
+    body {
+      font-family: Helvetica, sans-serif;
+      font-size: 16px;
+      background-color: #f4f5f6;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .main {
+      background: #ffffff;
+      border: 1px solid #eaebed;
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: #9a9ea6;
+      margin-top: 24px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333333;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #555555;
+      margin-bottom: 16px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #333333;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 12px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #0867ec;
+      color: #333333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="main">
+      <h1>Thank You for Contacting Us!</h1>
+      <p>Dear <span class="label">{{FirstName}} {{LastName}}</span>,</p>
+      <p>Thank you for reaching out to us. We have received your message and will respond as soon as possible.</p>
+      <p>Here is a summary of your submission:</p>
+      <p><span class="label">Subject:</span> {{Subject}}</p>
+      <div class="note">
+        <p>{{Message}}</p>
+      </div>
+      <p>If you have any additional questions, feel free to reply to this email or contact us at <a
+          href="mailto:sloweycontact@gmail.com">sloweycontact@gmail.com</a>.</p>
+      <p>Thank you, and we look forward to assisting you!</p>
+      <p>Best regards,<br><strong>Eventis Team</strong></p>
+    </div>
+    <div class="footer">
+      <p>Eventis</p>
+      <p>Need to reach us? Visit <a href="https://www.slowey.works/">our website</a> or contact support.</p>
+    </div>
+  </div>
+</body>
+
+</html>

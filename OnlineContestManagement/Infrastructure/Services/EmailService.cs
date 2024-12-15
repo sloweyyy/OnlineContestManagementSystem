@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
+using OnlineContestManagement.Models;
 
 namespace OnlineContestManagement.Infrastructure.Services
 {
@@ -122,5 +123,59 @@ namespace OnlineContestManagement.Infrastructure.Services
 
             }
         }
+        public async Task SendContactFormEmail(ContactFormModel model)
+        {
+            var adminTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "ContactFormTemplate.html");
+            var adminEmailBody = await File.ReadAllTextAsync(adminTemplatePath);
+
+            adminEmailBody = adminEmailBody.Replace("{{FirstName}}", model.FirstName)
+                                           .Replace("{{LastName}}", model.LastName)
+                                           .Replace("{{Email}}", model.Email)
+                                           .Replace("{{Subject}}", model.Subject)
+                                           .Replace("{{Message}}", model.Message);
+
+            var adminMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, _smtpSettings.FromName),
+                Subject = "Contact Form Submission",
+                Body = adminEmailBody,
+                IsBodyHtml = true
+            };
+            adminMessage.To.Add("sloweycontact@gmail.com");
+
+            using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
+            {
+                smtpClient.EnableSsl = _smtpSettings.UseSSL;
+                smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
+                await smtpClient.SendMailAsync(adminMessage);
+            }
+
+            var confirmTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "ContactFormConfirmation.html");
+            var confirmEmailBody = await File.ReadAllTextAsync(confirmTemplatePath);
+
+            confirmEmailBody = confirmEmailBody.Replace("{{FirstName}}", model.FirstName)
+                                               .Replace("{{LastName}}", model.LastName)
+                                               .Replace("{{Subject}}", model.Subject)
+                                               .Replace("{{Message}}", model.Message);
+
+            var confirmMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, _smtpSettings.FromName),
+                Subject = "Thank You for Contacting Us!",
+                Body = confirmEmailBody,
+                IsBodyHtml = true
+            };
+            confirmMessage.To.Add(model.Email);
+
+            using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
+            {
+                smtpClient.EnableSsl = _smtpSettings.UseSSL;
+                smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
+                await smtpClient.SendMailAsync(confirmMessage);
+            }
+        }
+
+
+
     }
 }
