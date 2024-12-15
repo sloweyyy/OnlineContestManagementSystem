@@ -73,7 +73,7 @@ namespace OnlineContestManagement
 
             // Configure Repositories
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<ITokenRepository, TokenRepository>();
             services.AddScoped<IContestRepository, ContestRepository>();
             services.AddScoped<IContestRegistrationRepository, ContestRegistrationRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();

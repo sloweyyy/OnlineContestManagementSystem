@@ -94,5 +94,33 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
 
         }
+
+        public async Task SendResetPasswordEmail(string to, string resetToken)
+        {
+            var htmlTemplate = File.ReadAllText("Templates/ResetPasswordTemplate.html");
+            // client url from env
+            var resetPasswordLink = $"{Environment.GetEnvironmentVariable("CLIENT_URL")}/reset-password?resetPassword={resetToken}";
+
+            var emailBody = htmlTemplate
+            .Replace("{{resetPasswordLink}}", resetPasswordLink);
+            Console.WriteLine("Sending reset password email to " + to);
+            var message = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username, _smtpSettings.FromName),
+                Subject = "Reset Password",
+                Body = emailBody,
+                IsBodyHtml = true
+            };
+
+            message.To.Add(to);
+
+            using (var smtpClient = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port))
+            {
+                smtpClient.EnableSsl = _smtpSettings.UseSSL;
+                smtpClient.Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password);
+                await smtpClient.SendMailAsync(message);
+
+            }
+        }
     }
 }

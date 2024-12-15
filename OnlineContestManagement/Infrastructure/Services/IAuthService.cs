@@ -10,5 +10,7 @@ namespace OnlineContestManagement.Infrastructure.Services
         Task<AuthResponse> SignInAsync(SignInModel model);
         Task<AuthResponse> RefreshTokenAsync(string refreshToken);
         Task RevokeRefreshTokenAsync(string refreshToken);
+        Task<string> GenerateResetPasswordTokenAsync(string email);
+        Task<bool> ResetPasswordAsync(string resetToken, string newPassword);
     }
 }
