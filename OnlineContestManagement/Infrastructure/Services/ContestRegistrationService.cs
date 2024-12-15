@@ -122,7 +122,6 @@ namespace OnlineContestManagement.Infrastructure.Services
                     registration.UserId,
                     registration.ContestId
                 );
-
                 var result = await _registrationRepository.RegisterUserAsync(registration);
                 if (!result)
                 {
@@ -140,7 +139,7 @@ namespace OnlineContestManagement.Infrastructure.Services
 
                 try
                 {
-                    await _emailService.SendRegistrationConfirmation(registration.Email, registration.ContestId);
+                    await _emailService.SendRegistrationConfirmation(registration.Email, contest.Name);
                     _logger.LogInformation(
                         "Registration confirmation email sent to {Email} for Contest {ContestId}",
                         registration.Email,
@@ -196,10 +195,11 @@ namespace OnlineContestManagement.Infrastructure.Services
             }
 
             await _registrationRepository.WithdrawUserAsync(withdrawModel.ContestId, withdrawModel.UserId);
+            var contest = await _contestService.GetContestDetailsAsync(withdrawModel.ContestId);
 
             if (registration != null)
             {
-                await _emailService.SendWithdrawalConfirmation(registration.Email, withdrawModel.ContestId);
+                await _emailService.SendWithdrawalConfirmation(registration.Email, contest.Name);
             }
 
             return true;
