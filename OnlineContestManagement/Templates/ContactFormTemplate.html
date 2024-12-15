@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Contact Form Submission</title>
+  <style media="all" type="text/css">
+    body {
+      font-family: Helvetica, sans-serif;
+      font-size: 16px;
+      background-color: #f4f5f6;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .main {
+      background: #ffffff;
+      border: 1px solid #eaebed;
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: #9a9ea6;
+      margin-top: 24px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333333;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #555555;
+      margin-bottom: 16px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #333333;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 12px;
+      background-color: #f9f9f9;
+      border-left: 4px solid #0867ec;
+      color: #333333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="main">
+      <h1>Contact Form Submission</h1>
+      <p><span class="label">First Name:</span> {{FirstName}}</p>
+      <p><span class="label">Last Name:</span> {{LastName}}</p>
+      <p><span class="label">Email:</span> {{Email}}</p>
+      <p><span class="label">Subject:</span> {{Subject}}</p>
+      <p><span class="label">Message:</span></p>
+      <div class="note">
+        <p>{{Message}}</p>
+      </div>
+      <p>If you need further assistance, feel free to contact us directly at <a
+          href="mailto:sloweycontact@gmail.com">sloweycontact@gmail.com</a>.</p>
+    </div>
+    <div class="footer">
+      <p>Eventis</p>
+      <p>Don’t like these emails? <a href="https://www.slowey.works/">Unsubscribe</a>.</p>
+    </div>
+  </div>
+</body>
+
+</html>
